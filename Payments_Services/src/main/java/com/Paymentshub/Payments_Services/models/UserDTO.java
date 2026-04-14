@@ -2,9 +2,9 @@ package com.Paymentshub.Payments_Services.models;
 
 
 
-public class UserPayments {
+public class UserDTO {
 
-    private int Id;
+    private Long id;
 
     /** Nombre completo del usuario */
     private String nombre;
@@ -23,28 +23,27 @@ public class UserPayments {
      * @param username Nombre de usuario para login
      * @param password Contraseña del usuario
      */
-    public UserPayments(String nombre, String username, String password, int Id) {
+    public UserDTO(String nombre, String username, String password) {
 
         this.nombre=nombre;
         this.username=username;
         this.password=password;
-        this.Id = Id;
     }
 
     /**
      * Obtiene el ID del usuario.
      * @return El identificador único del usuario
      */
-    public int getId() {
-        return Id;
+    public Long getId() {
+        return id;
     }
 
     /**
      * Establece el ID del usuario.
      * @param id El identificador único a asignar
      */
-    public void setId(int id) {
-        this.Id = id;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     /**

@@ -44,9 +44,9 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable int id) {
+    public User getUserById(@PathVariable Long id) {
         return userService.getUserById(id);
-    }
+    } 
 
     /**
      * Crea un nuevo usuario en el sistema.

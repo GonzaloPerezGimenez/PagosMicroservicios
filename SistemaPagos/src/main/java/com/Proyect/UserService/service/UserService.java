@@ -60,7 +60,7 @@ public class UserService {
      * @param id Identificador único del usuario
      * @return User el usuario encontrado, o null si no existe
      */
-    public User getUserById(Integer id) {
+    public User getUserById(Long id) {
         if (userRepository.findById(id).isEmpty()) {
             throw new IllegalArgumentException("El usuario con ID " + id + " no existe");
         }

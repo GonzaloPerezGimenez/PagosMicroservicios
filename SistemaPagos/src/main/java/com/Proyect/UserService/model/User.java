@@ -18,7 +18,7 @@ public class User {
     /** Identificador único del usuario (ID primaria) - Generado automáticamente */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int Id;
+    private Long id;
 
     /** Nombre completo del usuario */
     private String nombre;
@@ -52,16 +52,16 @@ public class User {
      * Obtiene el ID del usuario.
      * @return El identificador único del usuario
      */
-    public int getId() {
-        return Id;
+    public Long getId() {
+        return id;
     }
 
     /**
      * Establece el ID del usuario.
      * @param Id El identificador único a asignar
      */
-    public void setId(int Id) {
-        this.Id = Id;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     /**

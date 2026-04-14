@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.Paymentshub.Payments_Services.client.UserClient;
 import com.Paymentshub.Payments_Services.models.Payments;
-import com.Paymentshub.Payments_Services.models.UserPayments;
+import com.Paymentshub.Payments_Services.models.UserDTO;
 import com.Paymentshub.Payments_Services.repository.PaymentsRepository;
 
 @Service
@@ -24,12 +24,20 @@ public class PaymentsService {
         return paymentsRepository.findAll();
     }  
     
-    public List<UserPayments> getAllUsers() {
+    public List<UserDTO> getAllUsers() {
         return userClient.getAllUsers();
     }
 
+    public UserDTO getUserById(Long id){
+        return userClient.getUserById(id);
+    }
+
     public Payments createPayment(Payments payment) {
-        payment.setStatus("PENDING"); // Set default status
+        Long id = payment.getUserId();
+        System.out.println(userClient.getUserById(payment.getUserId()));
+        if (userClient.getUserById(id)== null) {
+            throw new IllegalArgumentException("El usuario con ID " + id + " no existe");
+        }
         paymentsRepository.save(payment);
         return paymentsRepository.findById(payment.getId()).orElse(null);
     }
