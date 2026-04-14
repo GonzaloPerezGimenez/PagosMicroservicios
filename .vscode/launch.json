@@ -1,0 +1,34 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "PaymentsServicesApplication",
+            "request": "launch",
+            "mainClass": "com.Paymentshub.Payments_Services.PaymentsServicesApplication",
+            "projectName": "Payments_Services"
+        },
+        {
+            "type": "java",
+            "name": "UserServiceApp",
+            "request": "launch",
+            "mainClass": "com.Proyect.UserService.UserServiceApp",
+            "projectName": "cursoSpring"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Levantar ambos",
+            "configurations": [
+                "PaymentsServicesApplication",
+                "UserServiceApp"
+            ]
+        }
+    ]
+}
