@@ -6,6 +6,13 @@
             "name": "GatewayServiceApplication",
             "request": "launch",
             "mainClass": "com.gateway.Gateway_Service.GatewayServiceApplication",
+            "projectName": ""
+        },
+        {
+            "type": "java",
+            "name": "GatewayServiceApplication",
+            "request": "launch",
+            "mainClass": "com.gateway.Gateway_Service.GatewayServiceApplication",
             "projectName": "Gateway_Service"
         },
         {
