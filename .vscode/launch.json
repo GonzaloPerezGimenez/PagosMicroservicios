@@ -3,6 +3,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "GatewayServiceApplication",
+            "request": "launch",
+            "mainClass": "com.gateway.Gateway_Service.GatewayServiceApplication",
+            "projectName": "Gateway_Service"
+        },
+        {
+            "type": "java",
             "name": "Current File",
             "request": "launch",
             "mainClass": "${file}"
@@ -20,6 +27,13 @@
             "request": "launch",
             "mainClass": "com.Proyect.UserService.UserServiceApp",
             "projectName": "cursoSpring"
+        },
+        {
+            "type": "java",
+            "name": "GatewayServiceApplication",
+            "request": "launch",
+            "mainClass": "com.gateway.Gateway_Service.GatewayServiceApplication",
+            "projectName": "Gateway_Service"
         }
     ],
     "compounds": [
