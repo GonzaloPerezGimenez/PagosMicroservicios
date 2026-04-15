@@ -34,7 +34,6 @@ public class PaymentsService {
 
     public Payments createPayment(Payments payment) {
         Long id = payment.getUserId();
-        System.out.println(userClient.getUserById(payment.getUserId()));
         if (userClient.getUserById(id)== null) {
             throw new IllegalArgumentException("El usuario con ID " + id + " no existe");
         }
