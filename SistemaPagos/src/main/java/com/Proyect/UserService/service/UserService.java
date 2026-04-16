@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.Proyect.UserService.exceptions.InvalidUsernameException;
+import com.Proyect.UserService.exceptions.UsernameAlreadyExist;
 import com.Proyect.UserService.model.User;
 import com.Proyect.UserService.repository.UserRepository;
 
@@ -31,18 +33,17 @@ public class UserService {
      *
      * @param user Objeto User con los datos del nuevo usuario
      * @return User el usuario creado y recuperado de la BD
-     * @throws IllegalArgumentException si el username está vacío o ya existe
+     * @throws InvalidUsernameException si el username está vacío o ya existe
      */
     public User saveUser(User user) {
         String username= user.getUsername();
-        if(username == null || username.isBlank()) {
-            throw new IllegalArgumentException("El nombre de usuario no puede estar vacío");
+        if(username == null || user.getUsername().isBlank()) {
+            throw new InvalidUsernameException("El nombre de usuario no puede estar vacío");
         }
         if(userRepository.findByUsername(username).isPresent()) {
-            throw new IllegalArgumentException("El nombre de usuario ya existe");
+            throw new UsernameAlreadyExist("El nombre de usuario ya existe");
         }
-        userRepository.save(user);
-        return userRepository.findById(user.getId()).orElse(null);
+        return userRepository.save(user);
     }
 
     /**
@@ -61,10 +62,8 @@ public class UserService {
      * @return User el usuario encontrado, o null si no existe
      */
     public User getUserById(Long id) {
-        if (userRepository.findById(id).isEmpty()) {
-            throw new IllegalArgumentException("El usuario con ID " + id + " no existe");
-        }
-        return userRepository.findById(id).orElse(null);
+        return userRepository.findById(id).
+        orElseThrow(() -> new RuntimeException("Usuario con ID " + id + " no encontrado"));
     }
 
 }
