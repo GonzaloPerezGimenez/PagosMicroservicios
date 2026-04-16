@@ -15,6 +15,8 @@ public class UserDTO {
     /** Contraseña del usuario (idealmente debería estar encriptada) */
     private String password;
 
+    private double balance;
+
     /**
      * Constructor completo que inicializa los datos básicos del usuario.
      *
@@ -94,4 +96,11 @@ public class UserDTO {
         this.password = password;
     }
 
+    public double getBalance() {
+        return balance;
+    }
+
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
 }

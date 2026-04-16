@@ -17,8 +17,8 @@ public class GlobalExceptionHandler {
                 java.time.LocalDateTime.now()
         );
     }
-    @ExceptionHandler(InvalidUsernameException.class)
-    public ErrorResponse handleInvalidUsername(InvalidUsernameException ex) {
+    @ExceptionHandler(InvalidUserIdException.class)
+    public ErrorResponse handleInvalidUsername(InvalidUserIdException ex) {
         return new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 "Bad Request",

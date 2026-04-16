@@ -14,12 +14,13 @@ public class Payments {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private double amount;
-    private Long userId;
-    private String Status;
+    private Long sendId;
+    private Long receiveId;
 
-    public Payments(double amount, Long userId) {
+    public Payments(double amount, Long sendId, Long receiveId) {
         this.amount = amount;
-        this.userId = userId;
+        this.sendId = sendId;
+        this.receiveId = receiveId;
     }
 
     public Payments() {
@@ -41,21 +42,20 @@ public class Payments {
         this.amount = amount;
     }
 
-    public Long getUserId() {
-        return userId;
+    public Long getSendId() {
+        return sendId;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setSendId(Long sendId) {
+        this.sendId = sendId;
     }
 
-    public String getStatus() {
-        return Status;
+    public Long getReceiveId() {
+        return receiveId;
     }
 
-    public void setStatus(String status) {
-        Status = status;
+    public void setReceiveId(Long receiveId) {
+        this.receiveId = receiveId;
     }
-    
 
 }
