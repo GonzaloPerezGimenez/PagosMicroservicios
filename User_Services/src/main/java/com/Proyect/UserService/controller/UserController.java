@@ -1,12 +1,15 @@
 package com.Proyect.UserService.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.Proyect.UserService.model.User;
@@ -48,22 +51,19 @@ public class UserController {
         return userService.getUserById(id);
     } 
 
-    /**
-     * Crea un nuevo usuario en el sistema.
-     * Recibe los datos del usuario en el cuerpo de la petición (JSON).
-     * Delega la validación y almacenamiento al servicio.
-     *
-     * @param user Objeto User con los datos del nuevo usuario (JSON del request)
-     * @return User el usuario creado con su ID asignado
-     * @throws IllegalArgumentException si hay validación fallida (username vacío o duplicado)
-     *
-     * HTTP: POST /users
-     * Content-Type: application/json
-     */
     @PostMapping
     public User createUser(@RequestBody User user) {
         return userService.saveUser(user);
     }
     
-        
+    @PostMapping("/{id}/debit")
+    public User debitUserBalance(@PathVariable Long id, @RequestParam("amount") BigDecimal amount) {
+        return userService.debitUserBalance(id, amount);
+    }
+
+    @PostMapping("/{id}/credit")
+    public User creditUserBalance(@PathVariable Long id, @RequestParam("amount") BigDecimal amount) {
+        return userService.creditUserBalance(id, amount);
+    }
+
 }

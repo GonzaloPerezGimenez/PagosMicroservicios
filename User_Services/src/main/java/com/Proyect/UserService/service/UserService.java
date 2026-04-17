@@ -33,9 +33,16 @@ public class UserService {
         return getExistingUser(id);
     }
 
-    public User updateUserBalance(Long id, BigDecimal newBalance) {
+    public User debitUserBalance(Long id, BigDecimal amount) {
         User user = getExistingUser(id);
-        user.setBalance(newBalance);
+        validateDebitAmount(user, amount);
+        user.setBalance(user.getBalance().subtract(amount));
+        return userRepository.save(user);
+    }
+
+    public User creditUserBalance(Long id, BigDecimal amount) {
+        User user = getExistingUser(id);
+        user.setBalance(user.getBalance().add(amount));
         return userRepository.save(user);
     }
 
@@ -52,6 +59,11 @@ public class UserService {
     private User getExistingUser(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuario con ID " + userId + " no encontrado"));
+    }
+    private void validateDebitAmount(User user, BigDecimal amount) {
+        if (user.getBalance().compareTo(amount) < 0) {
+            throw new IllegalArgumentException("Saldo insuficiente para realizar el débito.");
+        }
     }
 
 }

@@ -84,8 +84,8 @@ public class PaymentsService {
     }
 
     private void doPayment(UserDTO sender, UserDTO receiver, BigDecimal amount) {
-        userClient.updateUserBalance(sender.getId(), sender.getBalance().subtract(amount));
-        userClient.updateUserBalance(receiver.getId(), receiver.getBalance().add(amount));
+        userClient.debitUserBalance(sender.getId(), amount);
+        userClient.creditUserBalance(receiver.getId(), amount);
     }
 
 }
