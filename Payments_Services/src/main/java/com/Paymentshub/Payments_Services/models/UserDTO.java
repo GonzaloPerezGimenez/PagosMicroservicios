@@ -1,6 +1,6 @@
 package com.Paymentshub.Payments_Services.models;
 
-
+import java.math.BigDecimal;
 
 public class UserDTO {
 
@@ -15,7 +15,7 @@ public class UserDTO {
     /** Contraseña del usuario (idealmente debería estar encriptada) */
     private String password;
 
-    private double balance;
+    private BigDecimal balance;
 
     /**
      * Constructor completo que inicializa los datos básicos del usuario.
@@ -96,11 +96,11 @@ public class UserDTO {
         this.password = password;
     }
 
-    public double getBalance() {
+    public BigDecimal getBalance() {
         return balance;
     }
 
-    public void setBalance(double balance) {
+    public void setBalance(BigDecimal balance) {
         this.balance = balance;
     }
 }

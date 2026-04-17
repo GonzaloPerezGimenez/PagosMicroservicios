@@ -3,6 +3,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "UserServiceApp",
+            "request": "launch",
+            "mainClass": "com.Proyect.UserService.UserServiceApp",
+            "projectName": "cursoSpring"
+        },
+        {
+            "type": "java",
             "name": "GatewayServiceApplication",
             "request": "launch",
             "mainClass": "com.gateway.Gateway_Service.GatewayServiceApplication",
@@ -26,7 +33,7 @@
             "name": "UserServiceApp",
             "request": "launch",
             "mainClass": "com.Proyect.UserService.UserServiceApp",
-            "projectName": "cursoSpring"
+            "projectName": "User_Services"
         },
         {
             "type": "java",
@@ -40,8 +47,8 @@
         {
             "name": "Levantar ambos",
             "configurations": [
-                "PaymentsServicesApplication",
                 "UserServiceApp",
+                "PaymentsServicesApplication",
                 "GatewayServiceApplication"
             ]
         }

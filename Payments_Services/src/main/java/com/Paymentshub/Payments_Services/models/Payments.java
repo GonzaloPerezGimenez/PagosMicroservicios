@@ -1,5 +1,7 @@
 package com.Paymentshub.Payments_Services.models;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -13,11 +15,11 @@ public class Payments {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private double amount;
+    private BigDecimal amount;
     private Long sendId;
     private Long receiveId;
 
-    public Payments(double amount, Long sendId, Long receiveId) {
+    public Payments(BigDecimal amount, Long sendId, Long receiveId) {
         this.amount = amount;
         this.sendId = sendId;
         this.receiveId = receiveId;
@@ -34,11 +36,11 @@ public class Payments {
         this.id = id;
     }
 
-    public double getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 
-    public void setAmount(double amount) {
+    public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
 

@@ -11,6 +11,6 @@
 	<modules>
 		<module>Gateway_Service</module>
 		<module>Payments_Services</module>
-		<module>SistemaPagos</module>
+		<module>User_Services</module>
 	</modules>
 </project>

@@ -1,10 +1,12 @@
 package com.Paymentshub.Payments_Services.client;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.Paymentshub.Payments_Services.models.UserDTO;
 
@@ -16,5 +18,8 @@ public interface UserClient {
 
     @GetMapping("/users/{id}")
     UserDTO getUserById(@PathVariable Long id);
+
+    @GetMapping("/users/{id}/balance")
+    UserDTO updateUserBalance(@PathVariable Long id, @RequestParam BigDecimal newBalance);
 
 }

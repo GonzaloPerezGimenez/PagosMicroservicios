@@ -1,7 +1,9 @@
 package com.Paymentshub.Payments_Services.service;
 
 
+import java.math.BigDecimal;
 import java.util.List;
+
 
 import org.springframework.stereotype.Service;
 
@@ -39,19 +41,17 @@ public class PaymentsService {
     }
 
     public Payments createPayment(Payments payment) {
-    Long senderId = payment.getSendId();
-    Long receiverId = payment.getReceiveId();
-    
-    validateParticipants(senderId, receiverId);
-    validateSenderBalance(senderId, payment.getAmount());
-    return paymentsRepository.save(payment);
+        UserDTO sender = getExistingUser(payment.getSendId());
+        UserDTO receiver = getExistingUser(payment.getReceiveId());
+        validateParticipants(payment.getSendId(), payment.getReceiveId());
+        validateSenderBalance(sender.getId(), payment.getAmount());
+        doPayment(sender, receiver, payment.getAmount());
+        return paymentsRepository.save(payment);
 
     }
 
 
     private void validateParticipants(Long senderId, Long receiverId) {
-        getExistingUser(senderId);
-        getExistingUser(receiverId);
         if (senderId.equals(receiverId)) {
             throw new IllegalArgumentException("El remitente y el destinatario no pueden ser el mismo usuario.");
         }
@@ -66,13 +66,13 @@ public class PaymentsService {
         }
     }
 
-    private void validateSenderBalance(Long senderId, double amount) {
+    private void validateSenderBalance(Long senderId, BigDecimal amount) {
         UserDTO sender = getExistingUser(senderId);
-        if (amount <= 0) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("El monto del pago debe ser mayor a cero.");
         }
 
-        if (sender.getBalance() < amount) {
+        if (sender.getBalance().compareTo(amount) < 0) {
             throw new IllegalArgumentException("El usuario con ID " + senderId + " no tiene suficiente saldo para realizar el pago.");
         }
         
@@ -81,6 +81,11 @@ public class PaymentsService {
         if (userId == null || userId <= 0) {
             throw new InvalidUserIdException("El ID del usuario no puede ser nulo o negativo");
         }
+    }
+
+    private void doPayment(UserDTO sender, UserDTO receiver, BigDecimal amount) {
+        userClient.updateUserBalance(sender.getId(), sender.getBalance().subtract(amount));
+        userClient.updateUserBalance(receiver.getId(), receiver.getBalance().add(amount));
     }
 
 }
