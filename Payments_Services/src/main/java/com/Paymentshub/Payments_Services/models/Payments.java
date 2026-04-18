@@ -1,6 +1,7 @@
 package com.Paymentshub.Payments_Services.models;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -18,11 +19,13 @@ public class Payments {
     private BigDecimal amount;
     private Long sendId;
     private Long receiveId;
+    private LocalDate date;
 
     public Payments(BigDecimal amount, Long sendId, Long receiveId) {
         this.amount = amount;
         this.sendId = sendId;
         this.receiveId = receiveId;
+        this.date = LocalDate.now();
     }
 
     public Payments() {
@@ -60,4 +63,11 @@ public class Payments {
         this.receiveId = receiveId;
     }
 
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
 }

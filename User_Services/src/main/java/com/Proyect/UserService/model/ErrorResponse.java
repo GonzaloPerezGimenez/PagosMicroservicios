@@ -3,10 +3,10 @@ package com.Proyect.UserService.model;
 import java.time.LocalDateTime;
 
 public class ErrorResponse {
-    private int status;
-    private String error;
-    private String message;
-    private LocalDateTime timestamp;
+    private final int status;
+    private final String error;
+    private final String message;
+    private final LocalDateTime timestamp;
 
     public ErrorResponse(int status, String error, String message, LocalDateTime timestamp) {
         this.status = status;

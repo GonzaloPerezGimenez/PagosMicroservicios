@@ -3,53 +3,33 @@
     "configurations": [
         {
             "type": "java",
-            "name": "UserServiceApp",
+            "name": "User Service",
             "request": "launch",
             "mainClass": "com.Proyect.UserService.UserServiceApp",
             "projectName": "cursoSpring"
         },
         {
             "type": "java",
-            "name": "GatewayServiceApplication",
+            "name": "Gateway Service",
             "request": "launch",
             "mainClass": "com.gateway.Gateway_Service.GatewayServiceApplication",
             "projectName": "Gateway_Service"
         },
         {
             "type": "java",
-            "name": "Current File",
-            "request": "launch",
-            "mainClass": "${file}"
-        },
-        {
-            "type": "java",
-            "name": "PaymentsServicesApplication",
+            "name": "Payments Service",
             "request": "launch",
             "mainClass": "com.Paymentshub.Payments_Services.PaymentsServicesApplication",
             "projectName": "Payments_Services"
-        },
-        {
-            "type": "java",
-            "name": "UserServiceApp",
-            "request": "launch",
-            "mainClass": "com.Proyect.UserService.UserServiceApp",
-            "projectName": "User_Services"
-        },
-        {
-            "type": "java",
-            "name": "GatewayServiceApplication",
-            "request": "launch",
-            "mainClass": "com.gateway.Gateway_Service.GatewayServiceApplication",
-            "projectName": "Gateway_Service"
         }
     ],
     "compounds": [
         {
             "name": "Levantar ambos",
             "configurations": [
-                "UserServiceApp",
-                "PaymentsServicesApplication",
-                "GatewayServiceApplication"
+                "User Service",
+                "Payments Service",
+                "Gateway Service"
             ]
         }
     ]

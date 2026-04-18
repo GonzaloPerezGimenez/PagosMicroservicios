@@ -4,11 +4,11 @@ package com.Paymentshub.Payments_Services.service;
 import java.math.BigDecimal;
 import java.util.List;
 
-
 import org.springframework.stereotype.Service;
 
 import com.Paymentshub.Payments_Services.client.UserClient;
 import com.Paymentshub.Payments_Services.exceptions.InvalidUserIdException;
+import com.Paymentshub.Payments_Services.exceptions.UserServiceException;
 import com.Paymentshub.Payments_Services.models.Payments;
 import com.Paymentshub.Payments_Services.models.UserDTO;
 import com.Paymentshub.Payments_Services.repository.PaymentsRepository;
@@ -31,11 +31,14 @@ public class PaymentsService {
     }  
     
     public List<UserDTO> getAllUsers() {
-        return userClient.getAllUsers();
+        try {
+            return userClient.getAllUsers();
+        } catch (FeignException.FeignServerException ex) {
+            throw new UserServiceException("Servicio de usuarios no disponible. Por favor, inténtelo de nuevo más tarde.");
+        }
     }
 
     public UserDTO getUserById(Long id){
-        validateUserId(id);
         return getExistingUser(id);
 
     }
@@ -63,6 +66,8 @@ public class PaymentsService {
             return userClient.getUserById(userId);
         } catch (FeignException.NotFound ex) {
             throw new InvalidUserIdException("No se encontró un usuario con ID: " + userId);
+        } catch (FeignException.FeignServerException ex) {
+            throw new UserServiceException("Servicio de usuarios no disponible. Por favor, inténtelo de nuevo más tarde.");
         }
     }
 
