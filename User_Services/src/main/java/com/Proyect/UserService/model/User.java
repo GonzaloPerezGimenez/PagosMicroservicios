@@ -2,6 +2,9 @@ package com.Proyect.UserService.model;
 
 import java.math.BigDecimal;
 
+import org.hibernate.annotations.SoftDelete;
+import org.hibernate.annotations.SoftDeleteType;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -13,8 +16,12 @@ import jakarta.persistence.Table;
  * Entidad JPA que representa un usuario en el sistema.
  * Se mapea a la tabla "users" en la base de datos.
  */
+
+@SoftDelete(strategy=SoftDeleteType.ACTIVE, columnName="is_active")
 @Entity
 @Table(name = "users")
+
+
 public class User {
 
     /** Identificador único del usuario (ID primaria) - Generado automáticamente */
@@ -33,6 +40,7 @@ public class User {
 
     private BigDecimal balance;
 
+
     /**
      * Constructor completo que inicializa los datos básicos del usuario.
      *
@@ -44,7 +52,7 @@ public class User {
         this.nombre=nombre;
         this.username=username;
         this.password=password;
-        this.balance=BigDecimal.ZERO; 
+        this.balance=BigDecimal.ZERO;
     }
 
     /**

@@ -2,8 +2,11 @@ package com.Proyect.UserService.controller;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -64,5 +67,16 @@ public class UserController {
     public User creditUserBalance(@PathVariable Long id, @RequestParam("amount") BigDecimal amount) {
         return userService.creditUserBalance(id, amount);
     }
+    
+    @PatchMapping("/{id}/update")
+    public User updateUserPatch(@PathVariable Long id, @RequestBody Map<String, String> updates) {
+        return userService.updateUser(id, updates);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+    }
+
 
 }

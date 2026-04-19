@@ -2,6 +2,7 @@ package com.Proyect.UserService.service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
@@ -33,6 +34,24 @@ public class UserService {
         return getExistingUser(id);
     }
 
+    public User updateUser(Long id, Map<String, String> updates) {
+        User user = getExistingUser(id);
+        for (Map.Entry<String, String> entry : updates.entrySet()) {
+            String campo = entry.getKey();
+            String valor = entry.getValue();
+            switch (campo) {
+                case "nombre" -> user.setNombre(valor);
+                case "username" -> {
+                    validateUsername(valor);
+                    user.setUsername(valor);
+                }
+                case "password" -> user.setPassword(valor);
+                default -> throw new IllegalArgumentException("Campo no válido");
+            }
+        }
+        return userRepository.save(user);
+    }
+
     public User debitUserBalance(Long id, BigDecimal amount) {
         User user = getExistingUser(id);
         validateDebitAmount(user, amount);
@@ -44,6 +63,11 @@ public class UserService {
         User user = getExistingUser(id);
         user.setBalance(user.getBalance().add(amount));
         return userRepository.save(user);
+    }
+
+    public void deleteUser(Long id) {
+        User user = getExistingUser(id);       
+        userRepository.delete(user);
     }
 
     // Métodos privados para validaciones y lógica interna
