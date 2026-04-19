@@ -36,20 +36,8 @@ public class UserService {
 
     public User updateUser(Long id, Map<String, String> updates) {
         User user = getExistingUser(id);
-        for (Map.Entry<String, String> entry : updates.entrySet()) {
-            String campo = entry.getKey();
-            String valor = entry.getValue();
-            switch (campo) {
-                case "nombre" -> user.setNombre(valor);
-                case "username" -> {
-                    validateUsername(valor);
-                    user.setUsername(valor);
-                }
-                case "password" -> user.setPassword(valor);
-                default -> throw new IllegalArgumentException("Campo no válido");
-            }
-        }
-        return userRepository.save(user);
+        User updatedUser = applyUpdates(user, updates);
+        return userRepository.save(updatedUser);
     }
 
     public User debitUserBalance(Long id, BigDecimal amount) {
@@ -88,6 +76,22 @@ public class UserService {
         if (user.getBalance().compareTo(amount) < 0) {
             throw new IllegalArgumentException("Saldo insuficiente para realizar el débito.");
         }
+    }
+    private User applyUpdates(User user, Map<String, String> updates) {
+        for (Map.Entry<String, String> entry : updates.entrySet()) {
+            String campo = entry.getKey();
+            String valor = entry.getValue();
+            switch (campo) {
+                case "nombre" -> user.setNombre(valor);
+                case "username" -> {
+                    validateUsername(valor);
+                    user.setUsername(valor);
+                }
+                case "password" -> user.setPassword(valor);
+                default -> throw new IllegalArgumentException("Campo no válido");
+            }
+        }
+        return user;
     }
 
 }
