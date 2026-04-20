@@ -62,7 +62,6 @@ public class PaymentsService {
     }
     private UserDTO getExistingUser(Long userId) {
         try {
-            validateUserId(userId);
             return userClient.getUserById(userId);
         } catch (FeignException.NotFound ex) {
             throw new InvalidUserIdException("No se encontró un usuario con ID: " + userId);
@@ -73,19 +72,9 @@ public class PaymentsService {
 
     private void validateSenderBalance(Long senderId, BigDecimal amount) {
         UserDTO sender = getExistingUser(senderId);
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("El monto del pago debe ser mayor a cero.");
-        }
-
         if (sender.getBalance().compareTo(amount) < 0) {
             throw new IllegalArgumentException("El usuario con ID " + senderId + " no tiene suficiente saldo para realizar el pago.");
-        }
-        
-    }
-     private void validateUserId(Long userId) {
-        if (userId == null || userId <= 0) {
-            throw new InvalidUserIdException("El ID del usuario no puede ser nulo o negativo");
-        }
+        }    
     }
 
     private void doPayment(UserDTO sender, UserDTO receiver, BigDecimal amount) {

@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.Proyect.UserService.model.User;
 import com.Proyect.UserService.service.UserService;
 
+import jakarta.validation.Valid;
+
 /**
  * UserController
  * Controlador REST que gestiona las peticiones HTTP relacionadas con usuarios.
@@ -54,7 +56,7 @@ public class UserController {
     } 
 
     @PostMapping
-    public User createUser(@RequestBody User user) {
+    public User createUser(@Valid @RequestBody User user) {
         return userService.saveUser(user);
     }
     

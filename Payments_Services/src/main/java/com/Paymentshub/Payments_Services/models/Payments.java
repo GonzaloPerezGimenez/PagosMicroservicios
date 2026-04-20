@@ -8,6 +8,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 @Entity
 @Table(name = "payments")
@@ -16,8 +18,11 @@ public class Payments {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Positive(message = "El monto debe ser positivo")
     private BigDecimal amount;
+    @NotNull(message = "El ID del remitente no puede ser nulo")
     private Long sendId;
+    @NotNull(message = "El ID del destinatario no puede ser nulo")
     private Long receiveId;
     private LocalDate date;
 

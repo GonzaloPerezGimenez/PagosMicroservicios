@@ -13,6 +13,8 @@ import com.Paymentshub.Payments_Services.models.Payments;
 import com.Paymentshub.Payments_Services.models.UserDTO;
 import com.Paymentshub.Payments_Services.service.PaymentsService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/payments")
 public class PaymentsController {
@@ -39,7 +41,7 @@ public class PaymentsController {
     }
            
     @PostMapping
-    public Payments createPayment(@RequestBody Payments payment) {
+    public Payments createPayment(@Valid @RequestBody Payments payment) {
         return paymentsService.createPayment(payment);
 
     }

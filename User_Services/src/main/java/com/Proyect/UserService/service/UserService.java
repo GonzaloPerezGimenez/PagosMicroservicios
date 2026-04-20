@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
-import com.Proyect.UserService.exceptions.InvalidUsernameException;
 import com.Proyect.UserService.exceptions.UsernameAlreadyExist;
 import com.Proyect.UserService.model.User;
 import com.Proyect.UserService.repository.UserRepository;
@@ -61,9 +60,6 @@ public class UserService {
     // Métodos privados para validaciones y lógica interna
 
     private void validateUsername(String username) {
-        if(username == null || username.isBlank()) {
-            throw new InvalidUsernameException("El nombre de usuario no puede estar vacío");
-        }
         if(userRepository.findByUsername(username).isPresent()) {
             throw new UsernameAlreadyExist("El nombre de usuario ya existe");
         }

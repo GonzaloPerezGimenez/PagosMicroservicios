@@ -10,6 +10,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 /**
  * User
@@ -30,12 +32,15 @@ public class User {
     private Long id;
 
     /** Nombre completo del usuario */
+    @NotBlank(message = "El nombre no puede estar vacío")
     private String nombre;
 
     /** Nombre de usuario único para login - No puede ser nulo ni duplicado */
+    @NotBlank(message = "El username no puede estar vacío")
     private String username;
 
     /** Contraseña del usuario (idealmente debería estar encriptada) */
+    @Size(min = 4, message = "La contraseña debe tener al menos 4 caracteres")
     private String password;
 
     private BigDecimal balance;
