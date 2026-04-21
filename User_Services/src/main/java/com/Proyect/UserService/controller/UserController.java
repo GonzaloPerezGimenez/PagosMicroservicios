@@ -59,6 +59,13 @@ public class UserController {
     public User createUser(@Valid @RequestBody User user) {
         return userService.saveUser(user);
     }
+
+    @PostMapping("/login")
+    public String loginUser(@RequestBody Map<String, String> loginRequest) {
+        String username = loginRequest.get("username");
+        String password = loginRequest.get("password");
+        return userService.loginUser(username, password);
+    }
     
     @PostMapping("/{id}/debit")
     public User debitUserBalance(@PathVariable Long id, @RequestParam("amount") BigDecimal amount) {
