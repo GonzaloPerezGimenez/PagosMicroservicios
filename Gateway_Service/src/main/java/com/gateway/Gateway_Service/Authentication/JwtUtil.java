@@ -1,17 +1,17 @@
 package com.gateway.Gateway_Service.Authentication;
 
-import java.security.Key;
-import java.util.Base64;
-
-import javax.crypto.SecretKey;
-
-import org.springframework.beans.factory.annotation.Value;
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
+import java.util.Base64;
+
+@Component
 public class JwtUtil {
+
     private final SecretKey key;
 
     public JwtUtil(@Value("${jwt.secret}") String secret) {
