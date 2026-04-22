@@ -41,6 +41,7 @@ public class User {
 
     /** Contraseña del usuario (idealmente debería estar encriptada) */
     @Size(min = 4, message = "La contraseña debe tener al menos 4 caracteres")
+    @NotBlank(message = "La contraseña no puede estar vacía")
     private String password;
 
     private BigDecimal balance;

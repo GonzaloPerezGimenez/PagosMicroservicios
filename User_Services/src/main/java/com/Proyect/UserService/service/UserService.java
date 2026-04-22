@@ -20,9 +20,9 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.passwordEncoder = null;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public User saveUser(User user) {
@@ -31,7 +31,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public String loginUser(String username, String password) { 
+    public String loginUser(String username, String password) {
         return logintoken(username, password);
     }
 
