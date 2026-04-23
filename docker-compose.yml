@@ -1,25 +1,8 @@
-version: "3.8"
-
 services:
-  db:
-    image: postgres:16
-    container_name: pagos-postgres
-    environment:
-      POSTGRES_DB: payments_db
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-    ports:
-      - "5432:5432"
-    volumes:
-      - pagos_postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d payments_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   gateway:
-    build: ./Gateway_Service
+    build: 
+      context: ./Gateway_Service
+      dockerfile: Dockerfile
     container_name: gateway-service
     ports:
       - "8080:8080"
@@ -32,39 +15,42 @@ services:
         condition: service_started
       payment-service:
         condition: service_started
+    networks:
+      - microservices-network
 
   user-service:
-    build: ./User_Services
+    build: 
+      context: ./User_Services
+      dockerfile: Dockerfile
     container_name: user-service
     ports:
       - "8081:8081"
     environment:
       JWT_SECRET: "vcGaq5k1m0VMQrjqzNoCRtHhS/+HecujQ30kr8PfSXc="
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://db:5432/payments_db"
-      SPRING_DATASOURCE_USERNAME: "user"
-      SPRING_DATASOURCE_PASSWORD: "password"
+      SPRING_DATASOURCE_URL: ${SPRING_USERDB_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: "org.postgresql.Driver"
-    depends_on:
-      db:
-        condition: service_healthy
+    networks:
+      - microservices-network
 
   payment-service:
-    build: ./Payments_Services
+    build: 
+      context: ./Payments_Services
+      dockerfile: Dockerfile
     container_name: payment-service
     ports:
       - "8082:8082"
     environment:
       JWT_SECRET: "vcGaq5k1m0VMQrjqzNoCRtHhS/+HecujQ30kr8PfSXc="
       USER_SERVICE_URL: "http://user-service:8081"
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://db:5432/payments_db"
-      SPRING_DATASOURCE_USERNAME: "user"
-      SPRING_DATASOURCE_PASSWORD: "password"
+      SPRING_DATASOURCE_URL: ${SPRING_PAYMENTDB_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: "org.postgresql.Driver"
-    depends_on:
-      db:
-        condition: service_healthy
-      user-service:
-        condition: service_started
+    networks:
+      - microservices-network
 
-volumes:
-  pagos_postgres_data:
+networks:
+  microservices-network:
+    driver: bridge
