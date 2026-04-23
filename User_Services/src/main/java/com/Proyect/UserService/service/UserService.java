@@ -18,11 +18,13 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtServices jwtServices;
 
     
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtServices = new JwtServices();
     }
 
     public User saveUser(User user) {
@@ -95,7 +97,7 @@ public class UserService {
     private String logintoken(String username, String password) {
         User user = getExistingUserByUserName(username);
         validatePassword(password, user.getPassword());
-        return JwtServices.generateToken(username);
+        return jwtServices.generateToken(username);
     }
     private User applyUpdates(User user, Map<String, String> updates) {
         validateUsername(user.getUsername());

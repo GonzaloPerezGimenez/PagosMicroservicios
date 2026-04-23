@@ -2,19 +2,22 @@ package com.Proyect.UserService.config;
 
 import java.util.Date;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
 public class JwtServices {
 
-    private static final String SECRET_KEY = "vcGaq5k1m0VMQrjqzNoCRtHhS/+HecujQ30kr8PfSXc=";
+        @Value("${jwt.secret}")
+        private static String secretKey;
 
-    public static String generateToken(String username) {
+    public String generateToken(String username) {
     return Jwts.builder()
             .setSubject(username)
             .setIssuedAt(new Date())
             .setExpiration(new Date(System.currentTimeMillis() + 86400000))
-            .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+            .signWith(SignatureAlgorithm.HS256, secretKey)
             .compact();
     }
 }
