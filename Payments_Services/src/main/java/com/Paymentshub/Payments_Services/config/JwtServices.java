@@ -1,4 +1,5 @@
-package com.Proyect.UserService.config;
+package com.Paymentshub.Payments_Services.config;
+
 import java.util.Base64;
 import java.util.Date;
 

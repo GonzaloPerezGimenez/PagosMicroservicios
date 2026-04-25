@@ -1,4 +1,4 @@
-package com.Proyect.UserService.config;
+package com.Paymentshub.Payments_Services.config;   
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
