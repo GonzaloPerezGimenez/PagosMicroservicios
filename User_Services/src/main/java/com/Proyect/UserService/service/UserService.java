@@ -20,10 +20,10 @@ public class UserService {
     private final JwtServices jwtServices;
 
     
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtServices jwtServices) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.jwtServices = new JwtServices();
+        this.jwtServices = jwtServices;
     }
 
     public User saveUser(User user) {
