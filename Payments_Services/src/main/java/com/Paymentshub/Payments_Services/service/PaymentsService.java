@@ -53,7 +53,11 @@ public class PaymentsService {
 
     }
 
+    public List<Payments> getUserPaymentById(Long id) {
+        return findPaymentsByUserId(id);
+    }
 
+    // Métodos privados para validaciones y lógica de negocio
     private void validateParticipants(Long senderId, Long receiverId) {
         if (senderId.equals(receiverId)) {
             throw new IllegalArgumentException("El remitente y el destinatario no pueden ser el mismo usuario.");
@@ -80,6 +84,15 @@ public class PaymentsService {
     private void doPayment(UserDTO sender, UserDTO receiver, BigDecimal amount) {
         userClient.debitUserBalance(sender.getId(), amount);
         userClient.creditUserBalance(receiver.getId(), amount);
+    }
+    private List <Payments> findPaymentsByUserId(Long id) {
+        if(getExistingUser(id)==null) {
+            throw new InvalidUserIdException("No se encontró un usuario con ID: " + id);
+        }
+        List<Payments> payments = getAllPayments().stream()
+                .filter(payment -> payment.getSendId().equals(id) || payment.getReceiveId().equals(id))
+                .toList();
+        return payments; 
     }
 
 }

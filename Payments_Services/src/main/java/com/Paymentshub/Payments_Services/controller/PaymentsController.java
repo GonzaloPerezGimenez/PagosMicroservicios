@@ -31,6 +31,11 @@ public class PaymentsController {
     public List<Payments> getPayments() {
         return paymentsService.getAllPayments();
     }
+    @GetMapping("/{id}")
+    public List<Payments> getUserPayments(@PathVariable Long id) {
+        return paymentsService.getUserPaymentById(id);
+    }
+    
     @GetMapping("/users")
     public List<UserDTO> getUsersClients() {
         return paymentsService.getAllUsers();
@@ -45,5 +50,7 @@ public class PaymentsController {
         return paymentsService.createPayment(payment);
 
     }
+
+    
 
 }
