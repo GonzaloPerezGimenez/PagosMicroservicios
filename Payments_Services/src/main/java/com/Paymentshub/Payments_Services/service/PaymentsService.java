@@ -85,14 +85,16 @@ public class PaymentsService {
         userClient.debitUserBalance(sender.getId(), amount);
         userClient.creditUserBalance(receiver.getId(), amount);
     }
-    private List <Payments> findPaymentsByUserId(Long id) {
-        if(getExistingUser(id)==null) {
-            throw new InvalidUserIdException("No se encontró un usuario con ID: " + id);
-        }
-        List<Payments> payments = getAllPayments().stream()
-                .filter(payment -> payment.getSendId().equals(id) || payment.getReceiveId().equals(id))
-                .toList();
-        return payments; 
-    }
+    private List<Payments> findPaymentsByUserId(Long id) {
+    getExistingUser(id);
+    List<Payments> payments = getAllPayments().stream()
+            .filter(payment ->
+                    id.equals(payment.getSendId()) ||
+                    id.equals(payment.getReceiveId())
+            )
+            .toList();
+    return payments;
+
+}
 
 }

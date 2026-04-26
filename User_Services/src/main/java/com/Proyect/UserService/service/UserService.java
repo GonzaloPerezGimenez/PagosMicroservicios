@@ -4,8 +4,10 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.Proyect.UserService.config.JwtServices;
 import com.Proyect.UserService.exceptions.UsernameAlreadyExist;
@@ -81,12 +83,20 @@ public class UserService {
         }
     }
     private User getExistingUserByID(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario con ID " + userId + " no encontrado"));
+
+    return userRepository.findById(userId)
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Usuario con ID " + userId + " no encontrado"
+            ));
+
     }
     private User getExistingUserByUserName(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Usuario con nombre de usuario " + username + " no encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Usuario con nombre de usuario " + username + " no encontrado"
+                ));
     }
     private void validateDebitAmount(User user, BigDecimal amount) {
         if (user.getBalance().compareTo(amount) < 0) {
