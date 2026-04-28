@@ -109,7 +109,6 @@ public class UserService {
         return jwtServices.generateToken(username);
     }
     private User applyUpdates(User user, Map<String, String> updates) {
-        validateUsername(user.getUsername());
         for (Map.Entry<String, String> entry : updates.entrySet()) {
             String campo = entry.getKey();
             String valor = entry.getValue();

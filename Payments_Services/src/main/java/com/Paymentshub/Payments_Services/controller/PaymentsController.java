@@ -1,8 +1,10 @@
 package com.Paymentshub.Payments_Services.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -43,6 +45,11 @@ public class PaymentsController {
     @GetMapping("/users/{id}")
     public UserDTO getUserById(@PathVariable Long id){
         return paymentsService.getUserById(id);
+    }
+
+    @PatchMapping("/users/{id}/update")
+    public UserDTO updateUser(@PathVariable Long id, @RequestBody Map<String, String> updates) {
+        return paymentsService.updateUser(id, updates);
     }
            
     @PostMapping

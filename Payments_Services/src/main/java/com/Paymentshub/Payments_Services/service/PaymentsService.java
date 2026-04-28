@@ -3,6 +3,7 @@ package com.Paymentshub.Payments_Services.service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
@@ -55,6 +56,10 @@ public class PaymentsService {
 
     public List<Payments> getUserPaymentById(Long id) {
         return findPaymentsByUserId(id);
+    }
+
+    public UserDTO updateUser(Long id, Map<String, String> updates) {
+        return userClient.updateUser(id, updates);
     }
 
     // Métodos privados para validaciones y lógica de negocio

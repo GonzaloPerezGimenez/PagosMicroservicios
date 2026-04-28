@@ -2,11 +2,14 @@ package com.Paymentshub.Payments_Services.client;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.Paymentshub.Payments_Services.models.UserDTO;
@@ -25,6 +28,9 @@ public interface UserClient {
 
     @PostMapping("/users/{id}/credit")
     UserDTO creditUserBalance(@PathVariable Long id, @RequestParam("amount") BigDecimal amount);
+
+    @PatchMapping("/users/{id}/update")
+    UserDTO updateUser(@PathVariable Long id, @RequestBody Map<String, String> updates);
     
 
 }
