@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.boot.security.autoconfigure.SecurityProperties.User;
 import org.springframework.stereotype.Service;
 
 import com.Paymentshub.Payments_Services.client.UserClient;
@@ -75,16 +76,17 @@ public class PaymentsService {
         }
     }
 
-    private void validateSenderBalance(Long senderId, BigDecimal amount) {
-        UserDTO sender = getExistingUser(senderId);
+    private void validateSenderBalance(UserDTO sender, BigDecimal amount) {
         if (sender.getBalance().compareTo(amount) < 0) {
-            throw new IllegalArgumentException("El usuario con ID " + senderId + " no tiene suficiente saldo para realizar el pago.");
-        }    
+            throw new IllegalArgumentException("El usuario con ID " + sender.getId() + " no tiene suficiente saldo para realizar el pago.");
+        }
     }
 
-    private void doPayment(Long senderId, Long receiverId, BigDecimal amount) {       
-        validateParticipants(getExistingUser(senderId), getExistingUser(receiverId));
-        validateSenderBalance(senderId, amount);
+    private void doPayment(Long senderId, Long receiverId, BigDecimal amount) {   
+        UserDTO senderUser = getExistingUser(senderId);  
+        UserDTO receiverUser = getExistingUser(receiverId);  
+        validateParticipants(senderUser, receiverUser);
+        validateSenderBalance(senderUser, amount);
         userClient.debitUserBalance(senderId, amount);
         userClient.creditUserBalance(receiverId, amount);
     }
