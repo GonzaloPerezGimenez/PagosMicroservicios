@@ -12,9 +12,6 @@ public class UserDTO {
     /** Nombre de usuario único para login - No puede ser nulo ni duplicado */
     private String username;
 
-    /** Contraseña del usuario (idealmente debería estar encriptada) */
-    private String password;
-
     private BigDecimal balance;
 
     /**
@@ -25,11 +22,10 @@ public class UserDTO {
      * @param username Nombre de usuario para login
      * @param password Contraseña del usuario
      */
-    public UserDTO(String nombre, String username, String password) {
+    public UserDTO(String nombre, String username) {
 
         this.nombre=nombre;
         this.username=username;
-        this.password=password;
     }
 
     /**
@@ -78,22 +74,6 @@ public class UserDTO {
      */
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    /**
-     * Obtiene la contraseña del usuario.
-     * @return La contraseña del usuario
-     */
-    public String getPassword() {
-        return password;
-    }
-
-    /**
-     * Establece la contraseña del usuario.
-     * @param password La contraseña a asignar
-     */
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public BigDecimal getBalance() {

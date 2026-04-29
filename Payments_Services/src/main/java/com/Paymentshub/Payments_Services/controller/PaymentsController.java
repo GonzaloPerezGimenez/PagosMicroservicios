@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,7 +35,7 @@ public class PaymentsController {
     }
     @GetMapping("/{id}")
     public List<Payments> getUserPayments(@PathVariable Long id) {
-        return paymentsService.getUserPaymentById(id);
+        return paymentsService.getPaymentsByUserId(id);
     }
     
     @GetMapping("/users")
@@ -47,7 +47,7 @@ public class PaymentsController {
         return paymentsService.getUserById(id);
     }
 
-    @PatchMapping("/users/{id}/update")
+    @PutMapping("/users/{id}/update")
     public UserDTO updateUser(@PathVariable Long id, @RequestBody Map<String, String> updates) {
         return paymentsService.updateUser(id, updates);
     }

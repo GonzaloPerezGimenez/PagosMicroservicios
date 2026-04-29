@@ -6,9 +6,9 @@ import java.util.Map;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -29,7 +29,7 @@ public interface UserClient {
     @PostMapping("/users/{id}/credit")
     UserDTO creditUserBalance(@PathVariable Long id, @RequestParam("amount") BigDecimal amount);
 
-    @PatchMapping("/users/{id}/update")
+    @PutMapping("/users/{id}/update")
     UserDTO updateUser(@PathVariable Long id, @RequestBody Map<String, String> updates);
     
 

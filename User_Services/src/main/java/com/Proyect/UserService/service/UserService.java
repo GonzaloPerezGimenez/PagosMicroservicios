@@ -14,6 +14,7 @@ import com.Proyect.UserService.exceptions.UsernameAlreadyExist;
 import com.Proyect.UserService.model.User;
 import com.Proyect.UserService.repository.UserRepository;
 
+
 @Service
 public class UserService {
 
@@ -29,9 +30,7 @@ public class UserService {
     }
 
     public User saveUser(User user) {
-        validateUsername(user.getUsername());
-        encodePassword(user);
-        return userRepository.save(user);
+        return userRepository.save(registerUser(user));
     }
 
     public String loginUser(String username, String password) {
@@ -47,27 +46,19 @@ public class UserService {
     }
 
     public User updateUser(Long id, Map<String, String> updates) {
-        User user = getExistingUserByID(id);
-        User updatedUser = applyUpdates(user, updates);
-        return userRepository.save(updatedUser);
+        return userRepository.save(applyUpdates(getExistingUserByID(id), updates));
     }
 
     public User debitUserBalance(Long id, BigDecimal amount) {
-        User user = getExistingUserByID(id);
-        validateDebitAmount(user, amount);
-        user.setBalance(user.getBalance().subtract(amount));
-        return userRepository.save(user);
+        return userRepository.save(applyDebit(getExistingUserByID(id), amount));
     }
 
     public User creditUserBalance(Long id, BigDecimal amount) {
-        User user = getExistingUserByID(id);
-        user.setBalance(user.getBalance().add(amount));
-        return userRepository.save(user);
+        return userRepository.save(applyCredit(getExistingUserByID(id), amount));
     }
 
-    public void deleteUser(Long id) {
-        User user = getExistingUserByID(id);       
-        userRepository.delete(user);
+    public void deleteUser(Long id) {      
+        userRepository.delete(getExistingUserByID(id));
     }
 
     // Métodos privados para validaciones y lógica interna
@@ -82,8 +73,12 @@ public class UserService {
             throw new RuntimeException("Contraseña incorrecta");
         }
     }
+    private User registerUser(User user) {
+        validateUsername(user.getUsername());
+        encodePassword(user);
+        return user;
+    }
     private User getExistingUserByID(Long userId) {
-
     return userRepository.findById(userId)
             .orElseThrow(() -> new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
@@ -122,6 +117,15 @@ public class UserService {
                 default -> throw new IllegalArgumentException("Campo no válido");
             }
         }
+        return user;
+    }
+    private User applyDebit(User user, BigDecimal amount) {
+        validateDebitAmount(user, amount);
+        user.setBalance(user.getBalance().subtract(amount));
+        return user;
+    }
+    private User applyCredit(User user, BigDecimal amount) {
+        user.setBalance(user.getBalance().add(amount));
         return user;
     }
     private void encodePassword(User user) {

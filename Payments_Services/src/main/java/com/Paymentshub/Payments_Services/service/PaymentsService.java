@@ -45,17 +45,13 @@ public class PaymentsService {
     }
 
     public Payments createPayment(Payments payment) {
-        UserDTO sender = getExistingUser(payment.getSendId());
-        UserDTO receiver = getExistingUser(payment.getReceiveId());
-        validateParticipants(payment.getSendId(), payment.getReceiveId());
-        validateSenderBalance(sender.getId(), payment.getAmount());
-        doPayment(sender, receiver, payment.getAmount());
+        doPayment(payment.getSendId(),payment.getReceiveId(), payment.getAmount());
         return paymentsRepository.save(payment);
 
     }
 
-    public List<Payments> getUserPaymentById(Long id) {
-        return findPaymentsByUserId(id);
+    public List<Payments> getPaymentsByUserId(Long userId) {
+        return findPaymentsByUserId(userId);
     }
 
     public UserDTO updateUser(Long id, Map<String, String> updates) {
@@ -63,8 +59,8 @@ public class PaymentsService {
     }
 
     // Métodos privados para validaciones y lógica de negocio
-    private void validateParticipants(Long senderId, Long receiverId) {
-        if (senderId.equals(receiverId)) {
+    private void validateParticipants(UserDTO senderUser, UserDTO receiverUser) {
+        if (senderUser.getId().equals(receiverUser.getId())) {
             throw new IllegalArgumentException("El remitente y el destinatario no pueden ser el mismo usuario.");
         }
 
@@ -86,20 +82,15 @@ public class PaymentsService {
         }    
     }
 
-    private void doPayment(UserDTO sender, UserDTO receiver, BigDecimal amount) {
-        userClient.debitUserBalance(sender.getId(), amount);
-        userClient.creditUserBalance(receiver.getId(), amount);
+    private void doPayment(Long senderId, Long receiverId, BigDecimal amount) {       
+        validateParticipants(getExistingUser(senderId), getExistingUser(receiverId));
+        validateSenderBalance(senderId, amount);
+        userClient.debitUserBalance(senderId, amount);
+        userClient.creditUserBalance(receiverId, amount);
     }
-    private List<Payments> findPaymentsByUserId(Long id) {
-    getExistingUser(id);
-    List<Payments> payments = getAllPayments().stream()
-            .filter(payment ->
-                    id.equals(payment.getSendId()) ||
-                    id.equals(payment.getReceiveId())
-            )
-            .toList();
-    return payments;
-
-}
+    private List<Payments> findPaymentsByUserId(Long userId) {
+    getExistingUser(userId);
+    return paymentsRepository.findBysendIdOrReceiveId(userId, userId);
+    }
 
 }

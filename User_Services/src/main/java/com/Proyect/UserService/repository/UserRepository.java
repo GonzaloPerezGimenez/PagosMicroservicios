@@ -14,7 +14,7 @@ import com.Proyect.UserService.model.User;
  * Define consultas personalizadas para búsquedas específicas.
  */
 @Repository
-public interface UserRepository  extends JpaRepository<User, Integer> {
+public interface UserRepository  extends JpaRepository<User, Long> {
 
     /**
      * Busca un usuario por su username (nombre de usuario).
