@@ -128,8 +128,10 @@ public class UserService {
                     validateUsername(valor);
                     user.setUsername(valor);
                 }
-                case "password" ->
+                case "password" -> {
+                    user.setPassword(valor);
                     encodePassword(user);
+                }
                 default ->
                     throw new IllegalArgumentException("Campo no válido");
             }
