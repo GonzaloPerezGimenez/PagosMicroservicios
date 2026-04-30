@@ -14,38 +14,42 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 /**
- * User
- * Entidad JPA que representa un usuario en el sistema.
- * Se mapea a la tabla "users" en la base de datos.
+ * User Entidad JPA que representa un usuario en el sistema. Se mapea a la tabla
+ * "users" en la base de datos.
  */
-
-@SoftDelete(strategy=SoftDeleteType.ACTIVE, columnName="is_active")
+@SoftDelete(strategy = SoftDeleteType.ACTIVE, columnName = "is_active")
 @Entity
 @Table(name = "users")
 
-
 public class User {
 
-    /** Identificador único del usuario (ID primaria) - Generado automáticamente */
+    /**
+     * Identificador único del usuario (ID primaria) - Generado automáticamente
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** Nombre completo del usuario */
+    /**
+     * Nombre completo del usuario
+     */
     @NotBlank(message = "El nombre no puede estar vacío")
     private String nombre;
 
-    /** Nombre de usuario único para login - No puede ser nulo ni duplicado */
+    /**
+     * Nombre de usuario único para login - No puede ser nulo ni duplicado
+     */
     @NotBlank(message = "El username no puede estar vacío")
     private String username;
 
-    /** Contraseña del usuario (idealmente debería estar encriptada) */
+    /**
+     * Contraseña del usuario (idealmente debería estar encriptada)
+     */
     @Size(min = 4, message = "La contraseña debe tener al menos 4 caracteres")
     @NotBlank(message = "La contraseña no puede estar vacía")
     private String password;
 
     private BigDecimal balance;
-
 
     /**
      * Constructor completo que inicializa los datos básicos del usuario.
@@ -54,11 +58,18 @@ public class User {
      * @param username Nombre de usuario para login
      * @param password Contraseña del usuario
      */
-    public User(String nombre, String username, String password){
-        this.nombre=nombre;
-        this.username=username;
-        this.password=password;
-        this.balance=BigDecimal.ZERO;
+    public User(Long id, String nombre, String username, BigDecimal balance) {
+        this.id = id;
+        this.nombre = nombre;
+        this.username = username;
+        this.balance = balance;
+    }
+
+    public User(String nombre, String username, String password) {
+        this.nombre = nombre;
+        this.username = username;
+        this.password = password;
+        this.balance = BigDecimal.ZERO;
     }
 
     /**
@@ -69,6 +80,7 @@ public class User {
 
     /**
      * Obtiene el ID del usuario.
+     *
      * @return El identificador único del usuario
      */
     public Long getId() {
@@ -77,6 +89,7 @@ public class User {
 
     /**
      * Establece el ID del usuario.
+     *
      * @param Id El identificador único a asignar
      */
     public void setId(Long id) {
@@ -85,6 +98,7 @@ public class User {
 
     /**
      * Obtiene el nombre completo del usuario.
+     *
      * @return El nombre del usuario
      */
     public String getNombre() {
@@ -93,6 +107,7 @@ public class User {
 
     /**
      * Establece el nombre completo del usuario.
+     *
      * @param nombre El nombre a asignar
      */
     public void setNombre(String nombre) {
@@ -101,6 +116,7 @@ public class User {
 
     /**
      * Obtiene el nombre de usuario para login.
+     *
      * @return El username del usuario
      */
     public String getUsername() {
@@ -109,6 +125,7 @@ public class User {
 
     /**
      * Establece el nombre de usuario para login.
+     *
      * @param username El username a asignar
      */
     public void setUsername(String username) {
@@ -117,6 +134,7 @@ public class User {
 
     /**
      * Obtiene la contraseña del usuario.
+     *
      * @return La contraseña del usuario
      */
     public String getPassword() {
@@ -125,6 +143,7 @@ public class User {
 
     /**
      * Establece la contraseña del usuario.
+     *
      * @param password La contraseña a asignar
      */
     public void setPassword(String password) {
@@ -132,11 +151,11 @@ public class User {
     }
 
     public BigDecimal getBalance() {
-    return balance;
+        return balance;
     }
 
     public void setBalance(BigDecimal balance) {
-    this.balance = balance;
+        this.balance = balance;
     }
 
 }

@@ -1,11 +1,10 @@
 package com.Paymentshub.Payments_Services.service;
 
-
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.boot.security.autoconfigure.SecurityProperties.User;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.Paymentshub.Payments_Services.client.UserClient;
@@ -30,8 +29,8 @@ public class PaymentsService {
 
     public List<Payments> getAllPayments() {
         return paymentsRepository.findAll();
-    }  
-    
+    }
+
     public List<UserDTO> getAllUsers() {
         try {
             return userClient.getAllUsers();
@@ -40,14 +39,15 @@ public class PaymentsService {
         }
     }
 
-    public UserDTO getUserById(Long id){
+    public UserDTO getUserById(Long id) {
         return getExistingUser(id);
 
     }
 
-    public Payments createPayment(Payments payment) {
-        doPayment(payment.getSendId(),payment.getReceiveId(), payment.getAmount());
-        return paymentsRepository.save(payment);
+    public ResponseEntity<String> createPayment(Payments payment) {
+        doPayment(payment.getSendId(), payment.getReceiveId(), payment.getAmount());
+        paymentsRepository.save(payment);
+        return ResponseEntity.ok("Pago realizado con éxito."); // Retorna un mensaje de éxito al controlador
 
     }
 
@@ -55,8 +55,9 @@ public class PaymentsService {
         return findPaymentsByUserId(userId);
     }
 
-    public UserDTO updateUser(Long id, Map<String, String> updates) {
-        return userClient.updateUser(id, updates);
+    public ResponseEntity<String> updateUser(Long id, Map<String, String> updates) {
+        userClient.updateUser(id, updates);
+        return ResponseEntity.ok("Usuario actualizado con éxito."); // Retorna un mensaje de éxito al controlador
     }
 
     // Métodos privados para validaciones y lógica de negocio
@@ -66,6 +67,7 @@ public class PaymentsService {
         }
 
     }
+
     private UserDTO getExistingUser(Long userId) {
         try {
             return userClient.getUserById(userId);
@@ -82,17 +84,18 @@ public class PaymentsService {
         }
     }
 
-    private void doPayment(Long senderId, Long receiverId, BigDecimal amount) {   
-        UserDTO senderUser = getExistingUser(senderId);  
-        UserDTO receiverUser = getExistingUser(receiverId);  
+    private void doPayment(Long senderId, Long receiverId, BigDecimal amount) {
+        UserDTO senderUser = getExistingUser(senderId);
+        UserDTO receiverUser = getExistingUser(receiverId);
         validateParticipants(senderUser, receiverUser);
         validateSenderBalance(senderUser, amount);
         userClient.debitUserBalance(senderId, amount);
         userClient.creditUserBalance(receiverId, amount);
     }
+
     private List<Payments> findPaymentsByUserId(Long userId) {
-    getExistingUser(userId);
-    return paymentsRepository.findBysendIdOrReceiveId(userId, userId);
+        getExistingUser(userId);
+        return paymentsRepository.findBysendIdOrReceiveId(userId, userId);
     }
 
 }

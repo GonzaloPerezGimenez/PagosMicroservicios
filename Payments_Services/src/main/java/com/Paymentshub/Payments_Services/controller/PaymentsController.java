@@ -3,6 +3,7 @@ package com.Paymentshub.Payments_Services.controller;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,37 +28,34 @@ public class PaymentsController {
         this.paymentsService = paymentsService;
     }
 
-    
-
     @GetMapping
     public List<Payments> getPayments() {
         return paymentsService.getAllPayments();
     }
+
     @GetMapping("/{id}")
     public List<Payments> getUserPayments(@PathVariable Long id) {
         return paymentsService.getPaymentsByUserId(id);
     }
-    
+
     @GetMapping("/users")
     public List<UserDTO> getUsersClients() {
         return paymentsService.getAllUsers();
     }
+
     @GetMapping("/users/{id}")
-    public UserDTO getUserById(@PathVariable Long id){
+    public UserDTO getUserById(@PathVariable Long id) {
         return paymentsService.getUserById(id);
     }
 
     @PutMapping("/users/{id}/update")
-    public UserDTO updateUser(@PathVariable Long id, @RequestBody Map<String, String> updates) {
+    public ResponseEntity<String> updateUser(@PathVariable Long id, @RequestBody Map<String, String> updates) {
         return paymentsService.updateUser(id, updates);
     }
-           
+
     @PostMapping
-    public Payments createPayment(@Valid @RequestBody Payments payment) {
+    public ResponseEntity<String> createPayment(@Valid @RequestBody Payments payment) {
         return paymentsService.createPayment(payment);
-
     }
-
-    
 
 }
