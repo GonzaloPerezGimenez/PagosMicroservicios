@@ -41,36 +41,31 @@ public class UserService {
     public List<UserResponseDTO> getAllUsers() {
         return userRepository.findAll()
                 .stream()
-                .map(user -> new UserResponseDTO(
-                user.getId(),
-                user.getNombre(),
-                user.getUsername(),
-                user.getBalance()
-        ))
+                .map(this::convertToDTO)
                 .toList();
     }
 
-    public User getUserById(Long id) {
-        return getExistingUserByID(id);
+    public UserResponseDTO getUserById(Long id) {
+        return convertToDTO(getExistingUserById(id));
     }
 
     public ResponseEntity<String> updateUser(Long id, Map<String, String> updates) {
-        userRepository.save(applyUpdates(getExistingUserByID(id), updates));
+        userRepository.save(applyUpdates(getExistingUserById(id), updates));
         return ResponseEntity.ok("Usuario actualizado con éxito.");
     }
 
     public ResponseEntity<String> debitUserBalance(Long id, BigDecimal amount) {
-        userRepository.save(applyDebit(getExistingUserByID(id), amount));
+        userRepository.save(applyDebit(getExistingUserById(id), amount));
         return ResponseEntity.ok("Pago realizado con éxito.");
     }
 
     public ResponseEntity<String> creditUserBalance(Long id, BigDecimal amount) {
-        userRepository.save(applyCredit(getExistingUserByID(id), amount));
+        userRepository.save(applyCredit(getExistingUserById(id), amount));
         return ResponseEntity.ok("Cobro realizado con éxito.");
     }
 
     public ResponseEntity<String> deleteUser(Long id) {
-        userRepository.delete(getExistingUserByID(id));
+        userRepository.delete(getExistingUserById(id));
         return ResponseEntity.ok("Usuario eliminado con éxito.");
     }
 
@@ -93,7 +88,7 @@ public class UserService {
         return user;
     }
 
-    private User getExistingUserByID(Long userId) {
+    private User getExistingUserById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(
                 HttpStatus.NOT_FOUND,
@@ -155,6 +150,15 @@ public class UserService {
 
     private void encodePassword(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+    }
+
+    private UserResponseDTO convertToDTO(User user) {
+        return new UserResponseDTO(
+                user.getId(),
+                user.getNombre(),
+                user.getUsername(),
+                user.getBalance()
+        );
     }
 
 }
