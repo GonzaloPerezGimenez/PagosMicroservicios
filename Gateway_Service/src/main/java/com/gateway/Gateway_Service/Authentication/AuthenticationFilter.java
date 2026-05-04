@@ -45,14 +45,12 @@ public class AuthenticationFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
 
         try {
-            jwtUtil.validateToken(token);
+            Claims claims = jwtUtil.validateToken(token);
+            request.setAttribute("X-User-Id", claims.getSubject());
             filterChain.doFilter(request, response);
         } catch (ServletException | IOException e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Token JWT invalido o expirado");
         }
-        Claims claims = jwtUtil.validateToken(token);
-        request.setAttribute("X-User-Id", claims.getSubject());
-
     }
 }
