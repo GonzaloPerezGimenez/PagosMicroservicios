@@ -13,10 +13,37 @@ Cliente / Postman
 API Gateway - puerto 8080
       │
       ├── User Service - puerto 8081
-      │       └── Registro, login y emisión de JWT
+      │       └── Registro, login, consulta de usuarios y emisión de JWT
       │
       └── Payment Service - puerto 8082
               └── Creación y consulta de pagos
+```
+
+### Flujo de creación de un pago
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Cliente as Cliente / Postman
+    participant Gateway as API Gateway :8080
+    participant User as User Service :8081
+    participant Payment as Payment Service :8082
+    participant DB as PostgreSQL
+
+    Cliente->>Gateway: POST /users/login
+    Gateway->>User: Reenvía credenciales
+    User->>DB: Valida usuario
+    User-->>Gateway: Devuelve JWT
+    Gateway-->>Cliente: Token JWT
+
+    Cliente->>Gateway: POST /payments + Bearer Token
+    Gateway->>Gateway: Valida JWT
+    Gateway->>Payment: Reenvía petición de pago
+    Payment->>User: Comprueba usuarios / actualiza balances
+    User->>DB: Débito y crédito de balances
+    Payment->>DB: Guarda transacción
+    Payment-->>Gateway: Resultado del pago
+    Gateway-->>Cliente: Respuesta HTTP
 ```
 
 | Servicio | Responsabilidad |
@@ -123,37 +150,59 @@ mvn spring-boot:run
 
 ## Endpoints principales
 
-Todos los endpoints deben consumirse desde el Gateway:
+Todos los endpoints se consumen desde el Gateway:
 
 ```text
 http://localhost:8080
 ```
 
-### Autenticación
+### Usuarios y autenticación
 
-| Método | Ruta | Descripción |
-| --- | --- | --- |
-| `POST` | `/users/register` | Registrar un nuevo usuario. |
-| `POST` | `/users/login` | Iniciar sesión y obtener JWT. |
+| Método | Endpoint | Autenticación | Body / parámetros | Descripción |
+| --- | --- | --- | --- | --- |
+| `POST` | `/users` | No | JSON con `nombre`, `username`, `password` | Registra un nuevo usuario. |
+| `POST` | `/users/login` | No | JSON con `username`, `password` | Inicia sesión y devuelve un JWT. |
+| `GET` | `/users` | Según configuración del Gateway | - | Lista los usuarios registrados. |
+| `GET` | `/users/{id}` | Según configuración del Gateway | Path variable `id` | Consulta un usuario por ID. |
+| `POST` | `/users/{id}/debit?amount=10.00` | Interno / protegido | Query param `amount` | Resta saldo a un usuario. |
+| `POST` | `/users/{id}/credit?amount=10.00` | Interno / protegido | Query param `amount` | Suma saldo a un usuario. |
+| `PUT` | `/users/{id}/update` | Según configuración del Gateway | JSON con campos a actualizar | Actualiza datos de un usuario. |
+| `DELETE` | `/users/{id}` | Según configuración del Gateway | Path variable `id` | Elimina o desactiva un usuario. |
 
 ### Pagos
 
-| Método | Ruta | Descripción |
-| --- | --- | --- |
-| `POST` | `/payments` | Crear un nuevo pago. Requiere JWT. |
-| `GET` | `/payments/{id}` | Consultar un pago por ID. Requiere JWT. |
-| `GET` | `/payments/user/{userId}` | Listar pagos de un usuario. Requiere JWT. |
+| Método | Endpoint | Autenticación | Body / parámetros | Descripción |
+| --- | --- | --- | --- | --- |
+| `POST` | `/payments` | JWT recomendado | JSON con `amount`, `sendId`, `receiveId` | Crea un pago entre dos usuarios. |
+| `GET` | `/payments` | JWT recomendado | - | Lista todos los pagos. |
+| `GET` | `/payments/{id}` | JWT recomendado | Path variable `id` del usuario | Lista los pagos asociados a un usuario. |
+| `GET` | `/payments/users` | JWT recomendado | - | Lista usuarios desde el servicio de pagos. |
+| `GET` | `/payments/users/{id}` | JWT + header `X-User-Id` | Path variable `id` | Consulta un usuario desde pagos validando el usuario autenticado. |
+| `PUT` | `/payments/users/{id}/update` | JWT recomendado | JSON con campos a actualizar | Actualiza un usuario desde el servicio de pagos. |
+
+> Nota: el endpoint de registro es `POST /users`. No uses `/users/register` salvo que añadas esa ruta explícitamente en el controlador.
 
 ## Prueba rápida con Postman o cURL
 
-### 1. Registrar usuario
+### 1. Crear dos usuarios de prueba
 
 ```bash
-curl -X POST http://localhost:8080/users/register \
+curl -X POST http://localhost:8080/users \
   -H "Content-Type: application/json" \
   -d '{
-    "username": "demo",
-    "password": "demo123"
+    "nombre": "Usuario Demo 1",
+    "username": "demo1",
+    "password": "demo1234"
+  }'
+```
+
+```bash
+curl -X POST http://localhost:8080/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombre": "Usuario Demo 2",
+    "username": "demo2",
+    "password": "demo1234"
   }'
 ```
 
@@ -163,27 +212,44 @@ curl -X POST http://localhost:8080/users/register \
 curl -X POST http://localhost:8080/users/login \
   -H "Content-Type: application/json" \
   -d '{
-    "username": "demo",
-    "password": "demo123"
+    "username": "demo1",
+    "password": "demo1234"
   }'
 ```
 
-Copia el token JWT devuelto por el login.
+Copia el token JWT devuelto por el login. En Postman puedes guardarlo como variable `token`.
 
-### 3. Crear pago
+### 3. Crear un pago
 
 ```bash
 curl -X POST http://localhost:8080/payments \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer TU_TOKEN_JWT" \
   -d '{
-    "senderUserId": 1,
-    "receiverUserId": 2,
-    "amount": 25.50
+    "amount": 25.50,
+    "sendId": 1,
+    "receiveId": 2
   }'
 ```
 
-> Los nombres exactos de los campos pueden variar según los DTO actuales del proyecto. Si una petición devuelve `400 Bad Request`, revisa el DTO correspondiente del controlador.
+### 4. Consultar pagos
+
+```bash
+curl -X GET http://localhost:8080/payments \
+  -H "Authorization: Bearer TU_TOKEN_JWT"
+```
+
+```bash
+curl -X GET http://localhost:8080/payments/1 \
+  -H "Authorization: Bearer TU_TOKEN_JWT"
+```
+
+### 5. Consultar usuarios
+
+```bash
+curl -X GET http://localhost:8080/users \
+  -H "Authorization: Bearer TU_TOKEN_JWT"
+```
 
 ## Estructura del proyecto
 
