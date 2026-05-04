@@ -1,128 +1,236 @@
-# 💳 PagosMicroservicios
+# PagosMicroservicios
 
-Sistema de gestión de pagos entre usuarios registrados, construido con arquitectura de microservicios usando Spring Boot y Spring Cloud.
+API de gestión de usuarios y pagos construida con arquitectura de microservicios, Spring Boot, Spring Cloud Gateway, Spring Security, JWT, Spring Data JPA, PostgreSQL y Docker.
 
-> ⚠️ **Proyecto en desarrollo activo** — algunas funcionalidades están aún siendo implementadas.
+El objetivo del proyecto es demostrar una arquitectura backend modular y cercana a un entorno real: autenticación centralizada, comunicación entre servicios, separación de responsabilidades y despliegue con Docker Compose.
 
----
+## Arquitectura
 
-## 🏗️ Arquitectura
-
-El sistema está compuesto por tres microservicios independientes orquestados a través de un API Gateway:
-
-```
-Cliente
-   │
-   ▼
-Gateway Service  (puerto 8080)
-   ├──▶ User Service     (gestión de usuarios y autenticación)
-   └──▶ Payment Service  (gestión de pagos y transacciones)
+```text
+Cliente / Postman
+      │
+      ▼
+API Gateway - puerto 8080
+      │
+      ├── User Service - puerto 8081
+      │       └── Registro, login y emisión de JWT
+      │
+      └── Payment Service - puerto 8082
+              └── Creación y consulta de pagos
 ```
 
 | Servicio | Responsabilidad |
-|---|---|
-| `Gateway_Service` | Punto de entrada único. Enruta peticiones y aplica filtros |
-| `User_Services` | Registro, login y gestión de usuarios. Emisión de JWT |
-| `Payments_Services` | Creación y consulta de pagos entre usuarios |
+| --- | --- |
+| `Gateway_Service` | Punto de entrada único. Enruta peticiones hacia los microservicios y valida JWT. |
+| `User_Services` | Registro, login, gestión de usuarios y generación de tokens JWT. |
+| `Payments_Services` | Gestión de pagos y consulta de transacciones entre usuarios. |
 
----
+## Tecnologías
 
-## 🛠️ Tecnologías
+- Java 21
+- Spring Boot
+- Spring Cloud Gateway
+- Spring Security
+- JWT
+- Spring Data JPA / Hibernate
+- PostgreSQL
+- Maven multi-módulo
+- Docker y Docker Compose
 
-- **Java** + **Spring Boot**
-- **Spring Cloud Gateway** — API Gateway y enrutamiento
-- **Spring Security + JWT** — Autenticación y autorización
-- **Spring Data JPA** — Capa de persistencia
-- **PostgreSQL / H2** — Base de datos (H2 para desarrollo, PostgreSQL para producción)
-- **Maven multi-módulo** — Gestión del proyecto
+## Requisitos
 
----
+Para ejecutarlo con Docker:
 
-## 🚀 Cómo ejecutar el proyecto
+- Docker Desktop o Docker Engine
+- Docker Compose
+- Una base de datos PostgreSQL accesible, por ejemplo local, Neon, Railway, Supabase, etc.
 
-### Requisitos previos
+Para ejecutarlo manualmente:
 
-- Java 17+
-- Maven 3.8+
-- PostgreSQL (opcional, se puede usar H2 en memoria)
+- Java 21
+- Maven 3.9+
+- PostgreSQL
 
-### Pasos
+## Configuración del entorno
 
-1. Clona el repositorio:
-   ```bash
-   git clone https://github.com/GonzaloPerezGimenez/PagosMicroservicios.git
-   cd PagosMicroservicios
-   ```
+El proyecto usa variables de entorno. Por seguridad, el archivo `.env` real no debe subirse al repositorio.
 
-2. Compila todos los módulos desde la raíz:
-   ```bash
-   mvn clean install
-   ```
+1. Copia el archivo de ejemplo:
 
-3. Arranca cada servicio en terminales separadas (en este orden):
+```bash
+cp .env.example .env
+```
 
-   ```bash
-   # 1. User Service
-   cd User_Services
-   mvn spring-boot:run
+2. Edita `.env` con tus valores reales:
 
-   # 2. Payments Service
-   cd Payments_Services
-   mvn spring-boot:run
+```env
+JWT_SECRET=change-me-use-a-long-base64-secret-at-least-32-bytes
+SPRING_USERDB_URL=jdbc:postgresql://localhost:5432/users_db
+SPRING_PAYMENTDB_URL=jdbc:postgresql://localhost:5432/payments_db
+SPRING_DATASOURCE_USERNAME=postgres
+SPRING_DATASOURCE_PASSWORD=postgres
+SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+USER_SERVICE_URL=http://user-service:8081
+PAYMENT_SERVICE_URL=http://payment-service:8082
+```
 
-   # 3. Gateway
-   cd Gateway_Service
-   mvn spring-boot:run
-   ```
+> Nota: para reclutadores, se recomienda crear credenciales de prueba o usar una base de datos temporal sin datos sensibles.
 
-4. La API estará disponible en: `http://localhost:8080`
+## Ejecución con Docker Compose
 
----
+Desde la raíz del proyecto:
 
-## 📡 Endpoints principales
+```bash
+docker compose up --build
+```
 
-> Todos los endpoints pasan por el Gateway en `http://localhost:8080`
+La API quedará disponible en:
+
+```text
+http://localhost:8080
+```
+
+Para detener los contenedores:
+
+```bash
+docker compose down
+```
+
+## Ejecución manual
+
+Compila el proyecto desde la raíz:
+
+```bash
+mvn clean install
+```
+
+Arranca los servicios en terminales separadas:
+
+```bash
+cd User_Services
+mvn spring-boot:run
+```
+
+```bash
+cd Payments_Services
+mvn spring-boot:run
+```
+
+```bash
+cd Gateway_Service
+mvn spring-boot:run
+```
+
+## Endpoints principales
+
+Todos los endpoints deben consumirse desde el Gateway:
+
+```text
+http://localhost:8080
+```
 
 ### Autenticación
+
 | Método | Ruta | Descripción |
-|---|---|---|
-| `POST` | `/users/register` | Registrar nuevo usuario |
-| `POST` | `/users/login` | Login y obtención de JWT |
+| --- | --- | --- |
+| `POST` | `/users/register` | Registrar un nuevo usuario. |
+| `POST` | `/users/login` | Iniciar sesión y obtener JWT. |
 
-### Pagos *(requiere JWT)*
+### Pagos
+
 | Método | Ruta | Descripción |
-|---|---|---|
-| `POST` | `/payments` | Crear un nuevo pago |
-| `GET` | `/payments/{id}` | Consultar un pago por ID |
-| `GET` | `/payments/user/{userId}` | Listar pagos de un usuario |
+| --- | --- | --- |
+| `POST` | `/payments` | Crear un nuevo pago. Requiere JWT. |
+| `GET` | `/payments/{id}` | Consultar un pago por ID. Requiere JWT. |
+| `GET` | `/payments/user/{userId}` | Listar pagos de un usuario. Requiere JWT. |
 
----
+## Prueba rápida con Postman o cURL
 
-## 📁 Estructura del proyecto
+### 1. Registrar usuario
 
+```bash
+curl -X POST http://localhost:8080/users/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "demo",
+    "password": "demo123"
+  }'
 ```
+
+### 2. Login
+
+```bash
+curl -X POST http://localhost:8080/users/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "demo",
+    "password": "demo123"
+  }'
+```
+
+Copia el token JWT devuelto por el login.
+
+### 3. Crear pago
+
+```bash
+curl -X POST http://localhost:8080/payments \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer TU_TOKEN_JWT" \
+  -d '{
+    "senderUserId": 1,
+    "receiverUserId": 2,
+    "amount": 25.50
+  }'
+```
+
+> Los nombres exactos de los campos pueden variar según los DTO actuales del proyecto. Si una petición devuelve `400 Bad Request`, revisa el DTO correspondiente del controlador.
+
+## Estructura del proyecto
+
+```text
 PagosMicroservicios/
-├── pom.xml                  # POM raíz (Maven multi-módulo)
-├── Gateway_Service/         # API Gateway (Spring Cloud Gateway)
-├── User_Services/           # Microservicio de usuarios
-└── Payments_Services/       # Microservicio de pagos
+├── Gateway_Service/
+│   ├── src/
+│   ├── Dockerfile
+│   └── pom.xml
+├── User_Services/
+│   ├── src/
+│   ├── Dockerfile
+│   └── pom.xml
+├── Payments_Services/
+│   ├── src/
+│   ├── Dockerfile
+│   └── pom.xml
+├── docker-compose.yml
+├── .env.example
+├── .gitignore
+├── README.md
+└── pom.xml
 ```
 
----
+## Buenas prácticas aplicadas
 
-## 🗺️ Roadmap
+- Separación por microservicios.
+- API Gateway como entrada única.
+- Configuración mediante variables de entorno.
+- Eliminación de credenciales del código fuente.
+- Dockerización independiente por servicio.
+- Maven multi-módulo para compilar desde la raíz.
 
-- [x] Estructura base de microservicios
-- [x] API Gateway con enrutamiento
-- [x] Autenticación con JWT
-- [ ] Comunicación entre servicios (Feign Client)
-- [ ] Dockerización del proyecto
-- [ ] Tests unitarios e integración
-- [ ] Documentación de la API con Swagger/OpenAPI
+## Seguridad
 
----
+No se deben subir archivos `.env`, contraseñas, tokens ni URLs privadas con credenciales al repositorio. Si alguna credencial ha sido publicada, debe rotarse inmediatamente y eliminarse del historial de Git.
 
-## 👤 Autor
+## Roadmap
 
-**Gonzalo Pérez Giménez**
-[GitHub](https://github.com/GonzaloPerezGimenez)
+- Añadir colección de Postman.
+- Añadir Swagger/OpenAPI por servicio.
+- Añadir tests unitarios e integración.
+- Añadir base de datos local opcional en `docker-compose.yml` para demo completa.
+- Añadir CI con GitHub Actions.
+
+## Autor
+
+Gonzalo Pérez Giménez
+
+- GitHub: [GonzaloPerezGimenez](https://github.com/GonzaloPerezGimenez)
