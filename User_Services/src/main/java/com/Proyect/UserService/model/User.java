@@ -58,13 +58,6 @@ public class User {
      * @param username Nombre de usuario para login
      * @param password Contraseña del usuario
      */
-    public User(Long id, String nombre, String username, BigDecimal balance) {
-        this.id = id;
-        this.nombre = nombre;
-        this.username = username;
-        this.balance = balance;
-    }
-
     public User(String nombre, String username, String password) {
         this.nombre = nombre;
         this.username = username;
