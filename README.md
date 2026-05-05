@@ -253,6 +253,17 @@ PagosMicroservicios/
 
 ---
 
+## Demo
+
+¿Quieres probarlo sin configurar base de datos ni variables de entorno?
+
+Escríbeme y te envío las credenciales de demo en menos de 24h:
+
+- 💼 [LinkedIn – Gonzalo Pérez Giménez](https://www.linkedin.com/in/gonzalo-perez-gimenez)
+- 📧 [GitHub – GonzaloPerezGimenez](https://github.com/GonzaloPerezGimenez)
+
+---
+
 ## Roadmap
 
 - [ ] Colección de Postman
