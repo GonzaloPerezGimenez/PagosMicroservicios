@@ -122,12 +122,12 @@ Copia `.env.example` como `.env` y rellena los valores:
 JWT_SECRET=vcGaq5k1m0VMQrjqzNoCRtHhS/+HecujQ30kr8PfSXc=
 
 # Base de datos – User Service
-SPRING_USERDB_URL=jdbc:postgresql://<host_neon>/users_db?sslmode=require&channel_binding=require
-SPRING_DATASOURCE_USERNAME=neondb_owner
+SPRING_USERDB_URL=jdbc:postgresql://ep-round-water-abt324em-pooler.eu-west-2.aws.neon.tech/users_db?sslmode=require&channel_binding=require
+SPRING_DATASOURCE_USERNAME=tu_usuario
 SPRING_DATASOURCE_PASSWORD=tu_password
 
 # Base de datos – Payment Service
-SPRING_PAYMENTDB_URL=jdbc:postgresql://<host_neon>/db_payments?sslmode=require&channel_binding=require
+SPRING_PAYMENTDB_URL=jdbc:postgresql://ep-round-water-abt324em-pooler.eu-west-2.aws.neon.tech/db_payments?sslmode=require&channel_binding=require
 
 # No cambiar
 SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
