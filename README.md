@@ -4,22 +4,26 @@ API de gestión de usuarios y pagos construida con arquitectura de microservicio
 
 El objetivo del proyecto es demostrar una arquitectura backend modular y cercana a un entorno real: autenticación centralizada, comunicación entre servicios, separación de responsabilidades y despliegue con Docker Compose.
 
+---
+
 ## Arquitectura
 
 ```text
 Cliente / Postman
       │
       ▼
-API Gateway - puerto 8080
+API Gateway ── puerto 8080  (único punto de entrada)
       │
-      ├── User Service - puerto 8081
-      │       └── Registro, login, consulta de usuarios y emisión de JWT
+      ├── User Service ── red interna :8081
+      │       └── Registro, login, gestión de usuarios y emisión de JWT
       │
-      └── Payment Service - puerto 8082
-              └── Creación y consulta de pagos
+      └── Payment Service ── red interna :8082
+              └── Creación y consulta de pagos entre usuarios
 ```
 
-### Flujo de creación de un pago
+> Los puertos 8081 y 8082 **no están expuestos al host**. Solo el Gateway (8080) es accesible desde fuera. Los microservicios se comunican por la red interna de Docker.
+
+### Flujo de autenticación y pago
 
 ```mermaid
 sequenceDiagram
@@ -28,7 +32,7 @@ sequenceDiagram
     participant Gateway as API Gateway :8080
     participant User as User Service :8081
     participant Payment as Payment Service :8082
-    participant DB as PostgreSQL
+    participant DB as PostgreSQL (Neon)
 
     Cliente->>Gateway: POST /users/login
     Gateway->>User: Reenvía credenciales
@@ -46,164 +50,133 @@ sequenceDiagram
     Gateway-->>Cliente: Respuesta HTTP
 ```
 
-| Servicio | Responsabilidad |
-| --- | --- |
-| `Gateway_Service` | Punto de entrada único. Enruta peticiones hacia los microservicios y valida JWT. |
-| `User_Services` | Registro, login, gestión de usuarios y generación de tokens JWT. |
-| `Payments_Services` | Gestión de pagos y consulta de transacciones entre usuarios. |
+---
 
 ## Tecnologías
 
 - Java 21
 - Spring Boot
 - Spring Cloud Gateway
-- Spring Security
-- JWT
+- Spring Security + JWT (jjwt)
 - Spring Data JPA / Hibernate
-- PostgreSQL
-- Maven multi-módulo
+- OpenFeign (comunicación entre servicios)
+- PostgreSQL (Neon)
 - Docker y Docker Compose
+- Maven
+
+---
 
 ## Requisitos
 
-Para ejecutarlo con Docker:
+**Con Docker (recomendado):**
+- Docker Desktop o Docker Engine con Docker Compose
 
-- Docker Desktop o Docker Engine
-- Docker Compose
-- Una base de datos PostgreSQL accesible, por ejemplo local, Neon, Railway, Supabase, etc.
-
-Para ejecutarlo manualmente:
-
+**Sin Docker:**
 - Java 21
 - Maven 3.9+
-- PostgreSQL
+- PostgreSQL accesible
 
-## Configuración del entorno
+---
 
-El proyecto usa variables de entorno. Por seguridad, el archivo `.env` real no debe subirse al repositorio.
+## Inicio rápido con Docker
 
-1. Copia el archivo de ejemplo:
+### 1. Clona el repositorio
+
+```bash
+git clone https://github.com/GonzaloPerezGimenez/PagosMicroservicios.git
+cd PagosMicroservicios
+```
+
+### 2. Crea el archivo `.env`
 
 ```bash
 cp .env.example .env
 ```
 
-2. Edita `.env` con tus valores reales:
+Abre `.env` y rellena tus credenciales de base de datos. Ver sección [Configuración del entorno](#configuración-del-entorno).
 
-```env
-JWT_SECRET=change-me-use-a-long-base64-secret-at-least-32-bytes
-SPRING_USERDB_URL=jdbc:postgresql://localhost:5432/users_db
-SPRING_PAYMENTDB_URL=jdbc:postgresql://localhost:5432/payments_db
-SPRING_DATASOURCE_USERNAME=postgres
-SPRING_DATASOURCE_PASSWORD=postgres
-SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
-USER_SERVICE_URL=http://user-service:8081
-PAYMENT_SERVICE_URL=http://payment-service:8082
-```
-
-> Nota: para reclutadores, se recomienda crear credenciales de prueba o usar una base de datos temporal sin datos sensibles.
-
-## Ejecución con Docker Compose
-
-Desde la raíz del proyecto:
+### 3. Arranca todo
 
 ```bash
 docker compose up --build
 ```
 
-La API quedará disponible en:
+La API queda disponible en `http://localhost:8080`.
 
-```text
-http://localhost:8080
-```
-
-Para detener los contenedores:
+Para detener:
 
 ```bash
 docker compose down
 ```
 
-## Ejecución manual
+---
 
-Compila el proyecto desde la raíz:
+## Configuración del entorno
 
-```bash
-mvn clean install
+El proyecto usa variables de entorno para no exponer credenciales en el código. El archivo `.env` **nunca debe subirse al repositorio** (está en `.gitignore`).
+
+Copia `.env.example` como `.env` y rellena los valores:
+
+```env
+# JWT
+JWT_SECRET=vcGaq5k1m0VMQrjqzNoCRtHhS/+HecujQ30kr8PfSXc=
+
+# Base de datos – User Service
+SPRING_USERDB_URL=jdbc:postgresql://<host_neon>/users_db?sslmode=require&channel_binding=require
+SPRING_DATASOURCE_USERNAME=neondb_owner
+SPRING_DATASOURCE_PASSWORD=tu_password
+
+# Base de datos – Payment Service
+SPRING_PAYMENTDB_URL=jdbc:postgresql://<host_neon>/db_payments?sslmode=require&channel_binding=require
+
+# No cambiar
+SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+USER_SERVICE_URL=http://user-service:8081
+PAYMENT_SERVICE_URL=http://payment-service:8082
 ```
 
-Arranca los servicios en terminales separadas:
+---
 
-```bash
-cd User_Services
-mvn spring-boot:run
-```
+## Endpoints
 
-```bash
-cd Payments_Services
-mvn spring-boot:run
-```
-
-```bash
-cd Gateway_Service
-mvn spring-boot:run
-```
-
-## Endpoints principales
-
-Todos los endpoints se consumen desde el Gateway:
-
-```text
-http://localhost:8080
-```
+Todos los endpoints se consumen desde el Gateway en `http://localhost:8080`.
 
 ### Usuarios y autenticación
 
-| Método | Endpoint | Autenticación | Body / parámetros | Descripción |
-| --- | --- | --- | --- | --- |
-| `POST` | `/users` | No | JSON con `nombre`, `username`, `password` | Registra un nuevo usuario. |
-| `POST` | `/users/login` | No | JSON con `username`, `password` | Inicia sesión y devuelve un JWT. |
-| `GET` | `/users` | Según configuración del Gateway | - | Lista los usuarios registrados. |
-| `GET` | `/users/{id}` | Según configuración del Gateway | Path variable `id` | Consulta un usuario por ID. |
-| `POST` | `/users/{id}/debit?amount=10.00` | Interno / protegido | Query param `amount` | Resta saldo a un usuario. |
-| `POST` | `/users/{id}/credit?amount=10.00` | Interno / protegido | Query param `amount` | Suma saldo a un usuario. |
-| `PUT` | `/users/{id}/update` | Según configuración del Gateway | JSON con campos a actualizar | Actualiza datos de un usuario. |
-| `DELETE` | `/users/{id}` | Según configuración del Gateway | Path variable `id` | Elimina o desactiva un usuario. |
+| Método | Endpoint | Auth | Body | Descripción |
+|--------|----------|------|------|-------------|
+| `POST` | `/users` | No | `nombre`, `username`, `password` | Registra un nuevo usuario |
+| `POST` | `/users/login` | No | `username`, `password` | Login – devuelve JWT |
+| `GET` | `/users` | JWT | — | Lista todos los usuarios |
+| `GET` | `/users/{id}` | JWT | — | Consulta usuario por ID |
+| `PUT` | `/users/{id}/update` | JWT | Campos a actualizar | Actualiza datos de usuario |
+| `DELETE` | `/users/{id}` | JWT | — | Elimina (soft delete) un usuario |
 
 ### Pagos
 
-| Método | Endpoint | Autenticación | Body / parámetros | Descripción |
-| --- | --- | --- | --- | --- |
-| `POST` | `/payments` | JWT recomendado | JSON con `amount`, `sendId`, `receiveId` | Crea un pago entre dos usuarios. |
-| `GET` | `/payments` | JWT recomendado | - | Lista todos los pagos. |
-| `GET` | `/payments/{id}` | JWT recomendado | Path variable `id` del usuario | Lista los pagos asociados a un usuario. |
-| `GET` | `/payments/users` | JWT recomendado | - | Lista usuarios desde el servicio de pagos. |
-| `GET` | `/payments/users/{id}` | JWT + header `X-User-Id` | Path variable `id` | Consulta un usuario desde pagos validando el usuario autenticado. |
-| `PUT` | `/payments/users/{id}/update` | JWT recomendado | JSON con campos a actualizar | Actualiza un usuario desde el servicio de pagos. |
+| Método | Endpoint | Auth | Body | Descripción |
+|--------|----------|------|------|-------------|
+| `POST` | `/payments` | JWT | `amount`, `sendId`, `receiveId` | Crea un pago entre dos usuarios |
+| `GET` | `/payments` | JWT | — | Lista todos los pagos |
+| `GET` | `/payments/{id}` | JWT | — | Pagos asociados a un usuario |
+| `GET` | `/payments/users` | JWT | — | Lista usuarios desde Payment Service |
+| `GET` | `/payments/users/{id}` | JWT | — | Consulta usuario desde Payment Service |
+| `PUT` | `/payments/users/{id}/update` | JWT | Campos a actualizar | Actualiza usuario desde Payment Service |
 
-> Nota: el endpoint de registro es `POST /users`. No uses `/users/register` salvo que añadas esa ruta explícitamente en el controlador.
+---
 
-## Prueba rápida con Postman o cURL
+## Prueba rápida
 
-### 1. Crear dos usuarios de prueba
-
-```bash
-curl -X POST http://localhost:8080/users \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nombre": "Usuario Demo 1",
-    "username": "demo1",
-    "password": "demo1234"
-  }'
-```
+### 1. Crear dos usuarios
 
 ```bash
 curl -X POST http://localhost:8080/users \
   -H "Content-Type: application/json" \
-  -d '{
-    "nombre": "Usuario Demo 2",
-    "username": "demo2",
-    "password": "demo1234"
-  }'
+  -d '{"nombre": "Demo Uno", "username": "demo1", "password": "demo1234"}'
+
+curl -X POST http://localhost:8080/users \
+  -H "Content-Type: application/json" \
+  -d '{"nombre": "Demo Dos", "username": "demo2", "password": "demo1234"}'
 ```
 
 ### 2. Login
@@ -211,45 +184,35 @@ curl -X POST http://localhost:8080/users \
 ```bash
 curl -X POST http://localhost:8080/users/login \
   -H "Content-Type: application/json" \
-  -d '{
-    "username": "demo1",
-    "password": "demo1234"
-  }'
+  -d '{"username": "demo1", "password": "demo1234"}'
 ```
 
-Copia el token JWT devuelto por el login. En Postman puedes guardarlo como variable `token`.
+Copia el token JWT devuelto.
 
-### 3. Crear un pago
+### 3. Añadir saldo al usuario 1
+
+```bash
+curl -X POST "http://localhost:8080/users/1/credit?amount=100" \
+  -H "Authorization: Bearer TU_TOKEN"
+```
+
+### 4. Crear un pago
 
 ```bash
 curl -X POST http://localhost:8080/payments \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer TU_TOKEN_JWT" \
-  -d '{
-    "amount": 25.50,
-    "sendId": 1,
-    "receiveId": 2
-  }'
+  -H "Authorization: Bearer TU_TOKEN" \
+  -d '{"amount": 25.50, "sendId": 1, "receiveId": 2}'
 ```
 
-### 4. Consultar pagos
-
-```bash
-curl -X GET http://localhost:8080/payments \
-  -H "Authorization: Bearer TU_TOKEN_JWT"
-```
+### 5. Ver pagos del usuario 1
 
 ```bash
 curl -X GET http://localhost:8080/payments/1 \
-  -H "Authorization: Bearer TU_TOKEN_JWT"
+  -H "Authorization: Bearer TU_TOKEN"
 ```
 
-### 5. Consultar usuarios
-
-```bash
-curl -X GET http://localhost:8080/users \
-  -H "Authorization: Bearer TU_TOKEN_JWT"
-```
+---
 
 ## Estructura del proyecto
 
@@ -274,29 +237,31 @@ PagosMicroservicios/
 └── pom.xml
 ```
 
+---
+
 ## Buenas prácticas aplicadas
 
-- Separación por microservicios.
-- API Gateway como entrada única.
-- Configuración mediante variables de entorno.
-- Eliminación de credenciales del código fuente.
-- Dockerización independiente por servicio.
-- Maven multi-módulo para compilar desde la raíz.
+- API Gateway como único punto de entrada
+- Autenticación centralizada con JWT
+- Microservicios sin puertos expuestos (solo accesibles por red interna Docker)
+- Comunicación entre servicios con OpenFeign
+- Manejo global de excepciones con `@RestControllerAdvice`
+- DTOs para no exponer entidades ni contraseñas
+- Soft delete de usuarios con `@SoftDelete`
+- Variables de entorno para toda la configuración sensible
+- Dockerización independiente por servicio
 
-## Seguridad
-
-No se deben subir archivos `.env`, contraseñas, tokens ni URLs privadas con credenciales al repositorio. Si alguna credencial ha sido publicada, debe rotarse inmediatamente y eliminarse del historial de Git.
+---
 
 ## Roadmap
 
-- Añadir colección de Postman.
-- Añadir Swagger/OpenAPI por servicio.
-- Añadir tests unitarios e integración.
-- Añadir base de datos local opcional en `docker-compose.yml` para demo completa.
-- Añadir CI con GitHub Actions.
+- [ ] Colección de Postman
+- [ ] Swagger / OpenAPI por servicio
+- [ ] Tests unitarios e integración
+- [ ] CI con GitHub Actions
+
+---
 
 ## Autor
 
-Gonzalo Pérez Giménez
-
-- GitHub: [GonzaloPerezGimenez](https://github.com/GonzaloPerezGimenez)
+Gonzalo Pérez Giménez · [GitHub](https://github.com/GonzaloPerezGimenez)
