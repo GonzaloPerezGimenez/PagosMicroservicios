@@ -31,6 +31,11 @@ public interface UserClient {
 
     @PutMapping("/users/{id}/update")
     UserDTO updateUser(@PathVariable Long id, @RequestBody Map<String, String> updates);
+
+    @PostMapping("/users/{id}/deposit")
+    UserDTO depositUserBalance(@PathVariable Long id, @RequestBody BigDecimal amount);
     
+    @PostMapping("/users/{id}/withdraw")
+    UserDTO withdrawUserBalance(@PathVariable Long id, @RequestBody BigDecimal amount);
 
 }

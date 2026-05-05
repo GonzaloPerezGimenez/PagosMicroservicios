@@ -1,5 +1,6 @@
 package com.Paymentshub.Payments_Services.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +24,7 @@ import jakarta.validation.Valid;
 @RequestMapping("/payments")
 public class PaymentsController {
 
-    private final PaymentsService paymentsService; 
+    private final PaymentsService paymentsService;
 
     public PaymentsController(PaymentsService paymentsService) {
         this.paymentsService = paymentsService;
@@ -64,6 +65,16 @@ public class PaymentsController {
     @PostMapping
     public ResponseEntity<String> createPayment(@Valid @RequestBody Payments payment) {
         return paymentsService.createPayment(payment);
+    }
+
+    @PostMapping("/users/{id}/deposit")
+    public ResponseEntity<String> depositUserBalance(@PathVariable Long id, @RequestBody Map<String, BigDecimal> amount) {
+        return paymentsService.depositUserBalance(id, amount.get("amount"));
+    }
+
+    @PostMapping("/users/{id}/withdraw")
+    public ResponseEntity<String> withdrawUserBalance(@PathVariable Long id, @RequestBody Map<String, BigDecimal> amount) {
+        return paymentsService.withdrawUserBalance(id, amount.get("amount"));
     }
 
 }

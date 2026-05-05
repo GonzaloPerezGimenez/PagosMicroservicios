@@ -60,6 +60,16 @@ public class PaymentsService {
         return ResponseEntity.ok("Usuario actualizado con éxito."); // Retorna un mensaje de éxito al controlador
     }
 
+    public ResponseEntity<String> depositUserBalance(Long id, BigDecimal amount) {
+        userClient.creditUserBalance(id, amount);
+        return ResponseEntity.ok("Se han depositado los fondos con éxito."); // Retorna un mensaje de éxito al controlador
+    }
+
+    public ResponseEntity<String> withdrawUserBalance(Long id, BigDecimal amount) {
+        userClient.debitUserBalance(id, amount);
+        return ResponseEntity.ok("Se han retirado los fondos con éxito."); // Retorna un mensaje de éxito al controlador
+    }
+
     // Métodos privados para validaciones y lógica de negocio
     private void validateParticipants(UserDTO senderUser, UserDTO receiverUser) {
         if (senderUser.getId().equals(receiverUser.getId())) {

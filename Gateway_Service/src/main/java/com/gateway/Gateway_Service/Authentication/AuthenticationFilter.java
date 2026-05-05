@@ -36,9 +36,13 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Token JWT requerido");
+        if (authHeader == null || authHeader.isBlank()) {
+            writeUnauthorizedResponse(response, "TOKEN_MISSING", "Falta el token JWT");
+            return;
+        }
+
+        if (!authHeader.startsWith("Bearer ")) {
+            writeUnauthorizedResponse(response, "TOKEN_INVALID_FORMAT", "El token debe enviarse con el formato: Bearer <token>");
             return;
         }
 
@@ -47,10 +51,31 @@ public class AuthenticationFilter extends OncePerRequestFilter {
         try {
             Claims claims = jwtUtil.validateToken(token);
             request.setAttribute("X-User-Id", claims.getSubject());
+
             filterChain.doFilter(request, response);
-        } catch (ServletException | IOException e) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Token JWT invalido o expirado");
+
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            writeUnauthorizedResponse(response, "TOKEN_EXPIRED", "Token JWT expirado");
+
+        } catch (io.jsonwebtoken.JwtException | IllegalArgumentException e) {
+            writeUnauthorizedResponse(response, "TOKEN_INVALID", "Token JWT inválido");
+
         }
+    }
+
+    private void writeUnauthorizedResponse(HttpServletResponse response,
+            String error,
+            String message) throws IOException {
+
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        response.getWriter().write("""
+                {
+                  "error": "%s",
+                  "message": "%s"
+                }
+                """.formatted(error, message));
     }
 }
