@@ -259,7 +259,7 @@ PagosMicroservicios/
 
 Escríbeme y te envío las credenciales de demo en menos de 24h:
 
-- 💼 [LinkedIn – Gonzalo Pérez Giménez](https://www.linkedin.com/in/gonzalo-perez-gimenez)
+- 💼 [LinkedIn – Gonzalo Pérez Giménez](https://www.linkedin.com/in/gonzalo-perez-739b33b2/)
 - 📧 [GitHub – GonzaloPerezGimenez](https://github.com/GonzaloPerezGimenez)
 
 ---
