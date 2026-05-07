@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,7 +30,6 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        // Endpoints públicos
         if (path.equals("/users/login") || (path.equals("/users") && request.getMethod().equals("POST"))) {
             filterChain.doFilter(request, response);
             return;
@@ -51,15 +52,13 @@ public class AuthenticationFilter extends OncePerRequestFilter {
         try {
             Claims claims = jwtUtil.validateToken(token);
             request.setAttribute("X-User-Id", claims.getSubject());
-
             filterChain.doFilter(request, response);
 
-        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+        } catch (ExpiredJwtException e) {
             writeUnauthorizedResponse(response, "TOKEN_EXPIRED", "Token JWT expirado");
 
-        } catch (io.jsonwebtoken.JwtException | IllegalArgumentException e) {
+        } catch (JwtException | IllegalArgumentException e) {
             writeUnauthorizedResponse(response, "TOKEN_INVALID", "Token JWT inválido");
-
         }
     }
 
