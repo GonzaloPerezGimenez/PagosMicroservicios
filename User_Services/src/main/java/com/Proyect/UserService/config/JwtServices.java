@@ -1,4 +1,5 @@
 package com.Proyect.UserService.config;
+
 import java.util.Base64;
 import java.util.Date;
 
@@ -21,9 +22,10 @@ public class JwtServices {
         this.key = Keys.hmacShaKeyFor(decodedKey);
     }
 
-    public String generateToken(String username) {
+    public String generateToken(String username, Long id) {
         return Jwts.builder()
                 .setSubject(username)
+                .claim("user Id", id)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000))
                 .signWith(key, SignatureAlgorithm.HS256)

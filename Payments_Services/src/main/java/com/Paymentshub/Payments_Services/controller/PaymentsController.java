@@ -43,8 +43,8 @@ public class PaymentsController {
     }
 
     @GetMapping("/{id}")
-    public List<Payments> getUserPayments(@PathVariable Long id) {
-        return paymentsService.getPaymentsByUserId(id);
+    public List<Payments> getUserPayments(@PathVariable Long id, @RequestHeader("X-User-Id") String userId) {
+        return paymentsService.getPaymentsByUserId(getAuthenticatedUserId(id, userId));
     }
 
     @GetMapping("/users")
@@ -58,8 +58,10 @@ public class PaymentsController {
     }
 
     @PutMapping("/users/{id}/update")
-    public ResponseEntity<String> updateUser(@PathVariable Long id, @RequestBody Map<String, String> updates) {
-        return paymentsService.updateUser(id, updates);
+    public ResponseEntity<String> updateUser(@PathVariable Long id,
+            @RequestHeader("X-User-Id") String userId,
+            @RequestBody Map<String, String> updates) {
+        return paymentsService.updateUser(getAuthenticatedUserId(id, userId), updates);
     }
 
     @PostMapping
@@ -68,13 +70,17 @@ public class PaymentsController {
     }
 
     @PostMapping("/users/{id}/deposit")
-    public ResponseEntity<String> depositUserBalance(@PathVariable Long id, @RequestBody Map<String, BigDecimal> amount) {
-        return paymentsService.depositUserBalance(id, amount.get("amount"));
+    public ResponseEntity<String> depositUserBalance(@PathVariable Long id,
+            @RequestHeader("X-User-Id") String userId,
+            @RequestBody Map<String, BigDecimal> amount) {
+        return paymentsService.depositUserBalance(getAuthenticatedUserId(id, userId), amount.get("amount"));
     }
 
     @PostMapping("/users/{id}/withdraw")
-    public ResponseEntity<String> withdrawUserBalance(@PathVariable Long id, @RequestBody Map<String, BigDecimal> amount) {
-        return paymentsService.withdrawUserBalance(id, amount.get("amount"));
+    public ResponseEntity<String> withdrawUserBalance(@PathVariable Long id,
+            @RequestHeader("X-User-Id") String userId,
+            @RequestBody Map<String, BigDecimal> amount) {
+        return paymentsService.withdrawUserBalance(getAuthenticatedUserId(id, userId), amount.get("amount"));
     }
 
 }

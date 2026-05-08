@@ -114,7 +114,7 @@ public class UserService {
     private String logintoken(String username, String password) {
         User user = getExistingUserByUserName(username);
         validatePassword(password, user.getPassword());
-        return jwtServices.generateToken(username);
+        return jwtServices.generateToken(username, user.getId());
     }
 
     private User applyUpdates(User user, Map<String, String> updates) {

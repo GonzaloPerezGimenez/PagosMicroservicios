@@ -51,8 +51,9 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 
         try {
             Claims claims = jwtUtil.validateToken(token);
-            request.setAttribute("X-User-Id", claims.getSubject());
-            filterChain.doFilter(request, response);
+            MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
+            mutableRequest.addHeader("X-User-Id", claims.get("user Id").toString());
+            filterChain.doFilter(mutableRequest, response);
 
         } catch (ExpiredJwtException e) {
             writeUnauthorizedResponse(response, "TOKEN_EXPIRED", "Token JWT expirado");
