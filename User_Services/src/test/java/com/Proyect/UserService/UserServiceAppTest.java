@@ -1,4 +1,4 @@
-package com.Proyect.SistemaPago;
+package com.Proyect.UserService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.DisplayName;
@@ -17,7 +17,7 @@ import com.Proyect.UserService.repository.UserRepository;
 import com.Proyect.UserService.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
-class UserServieAppTest {
+class UserServiceAppTest {
 
     @Mock
     private UserRepository userRepository;
