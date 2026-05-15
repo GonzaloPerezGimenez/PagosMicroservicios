@@ -40,4 +40,22 @@ public class UserControllerTest {
         verify(userService, never()).saveUser(any());
     }
 
+    @Test
+    @DisplayName("Test para verificar el funcionamiento del controlador de usuarios")
+    void testCreateUser_PasswordIsEmpty_ReturnsBadRequest() throws Exception {
+        // Arrange
+        String userJson = """
+        {   "nombre": "Test User",
+            "username": "testuser",
+            "password": " "
+
+        }
+        """;
+        mockMvc.perform(post("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(userJson))
+                .andExpect(status().isBadRequest());
+        verify(userService, never()).saveUser(any());
+    }
+
 }
