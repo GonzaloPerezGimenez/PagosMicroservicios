@@ -1,6 +1,7 @@
 package com.Paymentshub.Payments_Services;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -124,6 +125,30 @@ class PaymentsServicesApplicationTests {
     }
 
     @Test
+    @DisplayName("Test para lanzar excepcion al intentar realizar un pago con saldo insuficiente")
+    void validateExceptionWhenPayingWithoutSufficientBalance() {
+        //Arranque
+        UserDTO userDTOSender = new UserDTO("Test Sender", "testsender");
+        userDTOSender.setId(1L);
+        userDTOSender.setBalance(new BigDecimal("99.99"));
+        UserDTO userDTODestination = new UserDTO("Test Destination", "testdestination");
+        userDTODestination.setId(2L);
+        Payments payment = new Payments(new BigDecimal("100.00"), userDTOSender.getId(), userDTODestination.getId());
+
+        when(userClient.getUserById(userDTOSender.getId()))
+                .thenReturn(userDTOSender);
+        when(userClient.getUserById(userDTODestination.getId()))
+                .thenReturn(userDTODestination);
+
+        //When
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> paymentsService.createPayment(payment));
+
+        //Then
+        assertEquals("No tiene suficiente saldo", exception.getMessage());
+        verify(paymentsRepository, never()).save(any(Payments.class));
+    }
+
+    @Test
     @DisplayName("Test para lanzar excepcion al enviar un pago a un destinatario inexistente")
     void validateExceptionWhenPayingToNonExistentUser() {
         // Arranque
@@ -145,13 +170,84 @@ class PaymentsServicesApplicationTests {
     }
 
     @Test
-    @DisplayName("Test para verificar que no se guarda un pago cuando se lanza una excepción")
-    void eXceptionTestShouldNotSavePayment() {
-        // Arranque
-        validateExceptionWhenPayingToNonExistentUser();
-        validateExceptionWhenPayingToSameUser();
+    @DisplayName("Test para verificar que se obtiene los pagos de un usuario correctamente")
+    void getPaymentsByUserIdTest() {
+        //Arranque
+        Payments payment1 = new Payments(new BigDecimal("100.00"), 1L, 2L);
+        payment1.setId(1L);
+        List<Payments> payments = List.of(payment1);
+        UserDTO userDTOSender = new UserDTO("Test Sender", "testsender");
+        userDTOSender.setId(1L);
 
-        verify(paymentsRepository, never()).save(any(Payments.class));
+        when(userClient.getUserById(userDTOSender.getId()))
+                .thenReturn(userDTOSender);
+        when(paymentsRepository.findBysendIdOrReceiveId(userDTOSender.getId(), userDTOSender.getId()))
+                .thenReturn(payments);
+        //When
+        List<Payments> listPayment = paymentsService.getPaymentsByUserId(1L);
+
+        //Then
+        verify(paymentsRepository).findBysendIdOrReceiveId(1L, 1L);
+        verify(userClient).getUserById(1L);
+        assertEquals(payments, listPayment);
     }
 
+    @Test
+    @DisplayName("Test para verificar que hay excepcion al no existir el usuario")
+    void getExcepcionIfUserIdDontExist() {
+        //Arranque
+        Long userID = 1L;
+        when(userClient.getUserById(userID))
+                .thenThrow(new InvalidUserIdException("El usuario con ID 1 no existe"));
+
+        //When
+        InvalidUserIdException exception = assertThrows(InvalidUserIdException.class, ()
+                -> paymentsService.getPaymentsByUserId(userID));
+
+        //Then
+        verify(paymentsRepository, never()).findBysendIdOrReceiveId(any(), any());
+        assertEquals("El usuario con ID 1 no existe", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Test para verificar que devuelve todos los pagos")
+    void validateReturnedAllPayments() {
+        //Arranque
+        Payments payment1 = new Payments(new BigDecimal("100.00"), 1L, 2L);
+        payment1.setId(1L);
+        List<Payments> payments = List.of(payment1);
+        when(paymentsRepository.findAll())
+                .thenReturn(payments);
+        //When
+        List<Payments> listOfPayments = paymentsService.getAllPayments();
+
+        //Then
+        verify(paymentsRepository).findAll();
+        assertEquals(payments, listOfPayments);
+        assertEquals(1, listOfPayments.size());
+        assertEquals(1L, listOfPayments.get(0).getId());
+        assertEquals(1L, listOfPayments.get(0).getSendId());
+        assertEquals(2L, listOfPayments.get(0).getReceiveId());
+        assertEquals(0, new BigDecimal("100.00").compareTo(listOfPayments.get(0).getAmount()));
+    }
+
+    @Test
+    @DisplayName("Test para verificar que devuelve todos los usuarios")
+    void validateReturnedAllUsers() {
+        //Arranque
+        UserDTO user1 = new UserDTO("Test User 1", "testuser1");
+        user1.setId(1L);
+        List<UserDTO> users = List.of(user1);
+        when(userClient.getAllUsers())
+                .thenReturn(users);
+        //When
+        List<UserDTO> listOfUsers = paymentsService.getAllUsers();
+
+        //Then
+        verify(userClient).getAllUsers();
+        assertEquals(users, listOfUsers);
+        assertEquals(1, listOfUsers.size());
+        assertEquals(1L, listOfUsers.get(0).getId());
+        assertEquals("testuser1", listOfUsers.get(0).getUsername());
+    }
 }
