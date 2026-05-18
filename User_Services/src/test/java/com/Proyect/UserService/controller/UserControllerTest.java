@@ -33,10 +33,12 @@ public class UserControllerTest {
             "password": "testpassword"
         }
         """;
+
         mockMvc.perform(post("/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(userJson))
                 .andExpect(status().isBadRequest());
+
         verify(userService, never()).saveUser(any());
     }
 
