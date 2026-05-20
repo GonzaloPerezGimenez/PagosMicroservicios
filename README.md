@@ -2,7 +2,7 @@
 
 API de gestión de usuarios y pagos construida con arquitectura de microservicios, Spring Boot, Spring Cloud Gateway, Spring Security, JWT, Spring Data JPA, PostgreSQL y Docker.
 
-El objetivo del proyecto es demostrar una arquitectura backend modular y cercana a un entorno real: autenticación centralizada, comunicación entre servicios, separación de responsabilidades y despliegue con Docker Compose.
+El objetivo del proyecto es demostrar una arquitectura backend modular y cercana a un entorno real: autenticación centralizada, propagación de identidad entre servicios, comunicación con Feign, separación de responsabilidades y despliegue con Docker Compose.
 
 ---
 
@@ -13,6 +13,7 @@ Cliente / Postman
       │
       ▼
 API Gateway ── puerto 8080  (único punto de entrada)
+      │  Valida JWT → extrae userId → propaga X-User-Id header
       │
       ├── User Service ── red interna :8081
       │       └── Registro, login, gestión de usuarios y emisión de JWT
@@ -37,13 +38,13 @@ sequenceDiagram
     Cliente->>Gateway: POST /users/login
     Gateway->>User: Reenvía credenciales
     User->>DB: Valida usuario
-    User-->>Gateway: Devuelve JWT
+    User-->>Gateway: Devuelve JWT (con userId en claims)
     Gateway-->>Cliente: Token JWT
 
     Cliente->>Gateway: POST /payments + Bearer Token
-    Gateway->>Gateway: Valida JWT
-    Gateway->>Payment: Reenvía petición de pago
-    Payment->>User: Comprueba usuarios / actualiza balances
+    Gateway->>Gateway: Valida JWT → extrae userId
+    Gateway->>Payment: Reenvía + header X-User-Id
+    Payment->>User: Comprueba usuarios / actualiza balances (Feign)
     User->>DB: Débito y crédito de balances
     Payment->>DB: Guarda transacción
     Payment-->>Gateway: Resultado del pago
@@ -55,13 +56,14 @@ sequenceDiagram
 ## Tecnologías
 
 - Java 21
-- Spring Boot
-- Spring Cloud Gateway
+- Spring Boot 4
+- Spring Cloud Gateway (MVC)
 - Spring Security + JWT (jjwt)
-- Spring Data JPA / Hibernate
+- Spring Data JPA / Hibernate (`@SoftDelete`)
 - OpenFeign (comunicación entre servicios)
-- PostgreSQL (Neon)
+- PostgreSQL (Neon cloud)
 - Docker y Docker Compose
+- JUnit 5 + Mockito + MockMvc
 - Maven
 
 ---
@@ -93,7 +95,7 @@ cd PagosMicroservicios
 cp .env.example .env
 ```
 
-Abre `.env` y rellena tus credenciales de base de datos. Ver sección [Configuración del entorno](#configuración-del-entorno).
+Abre `.env` y rellena tus credenciales de base de datos.
 
 ### 3. Arranca todo
 
@@ -113,26 +115,22 @@ docker compose down
 
 ## Configuración del entorno
 
-El proyecto usa variables de entorno para no exponer credenciales en el código. El archivo `.env` **nunca debe subirse al repositorio** (está en `.gitignore`).
-
-Copia `.env.example` como `.env` y rellena los valores:
-
 ```env
 # JWT
 JWT_SECRET=vcGaq5k1m0VMQrjqzNoCRtHhS/+HecujQ30kr8PfSXc=
 
 # Base de datos – User Service
-SPRING_USERDB_URL=jdbc:postgresql://ep-round-water-abt324em-pooler.eu-west-2.aws.neon.tech/users_db?sslmode=require&channel_binding=require
-SPRING_DATASOURCE_USERNAME=tu_usuario
+SPRING_USERDB_URL=jdbc:postgresql://<host_neon>/users_db?sslmode=require&channel_binding=require
+SPRING_DATASOURCE_USERNAME=neondb_owner
 SPRING_DATASOURCE_PASSWORD=tu_password
 
 # Base de datos – Payment Service
-SPRING_PAYMENTDB_URL=jdbc:postgresql://ep-round-water-abt324em-pooler.eu-west-2.aws.neon.tech/db_payments?sslmode=require&channel_binding=require
+SPRING_PAYMENTDB_URL=jdbc:postgresql://<host_neon>/db_payments?sslmode=require&channel_binding=require
 
 # No cambiar
 SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
-USER_SERVICE_URL=http://user-service:8081
-PAYMENT_SERVICE_URL=http://payment-service:8082
+USER_SERVICE_URL=http://localhost:8081
+PAYMENT_SERVICE_URL=http://localhost:8082
 ```
 
 ---
@@ -141,27 +139,47 @@ PAYMENT_SERVICE_URL=http://payment-service:8082
 
 Todos los endpoints se consumen desde el Gateway en `http://localhost:8080`.
 
-### Usuarios y autenticación
+### Autenticación y usuarios
 
-| Método | Endpoint | Auth | Body | Descripción |
-|--------|----------|------|------|-------------|
-| `POST` | `/users` | No | `nombre`, `username`, `password` | Registra un nuevo usuario |
-| `POST` | `/users/login` | No | `username`, `password` | Login – devuelve JWT |
-| `GET` | `/users` | JWT | — | Lista todos los usuarios |
-| `GET` | `/users/{id}` | JWT | — | Consulta usuario por ID |
-| `PUT` | `/users/{id}/update` | JWT | Campos a actualizar | Actualiza datos de usuario |
-| `DELETE` | `/users/{id}` | JWT | — | Elimina (soft delete) un usuario |
+| Método | Endpoint | Auth | Descripción |
+|--------|----------|------|-------------|
+| `POST` | `/users` | No | Registra un nuevo usuario |
+| `POST` | `/users/login` | No | Login — devuelve JWT |
+| `GET` | `/users` | JWT | Lista todos los usuarios |
+| `GET` | `/users/{id}` | JWT | Consulta usuario por ID |
+| `PUT` | `/users/{id}/update` | JWT | Actualiza datos de usuario |
+| `DELETE` | `/users/{id}` | JWT | Soft delete de usuario |
 
 ### Pagos
 
-| Método | Endpoint | Auth | Body | Descripción |
-|--------|----------|------|------|-------------|
-| `POST` | `/payments` | JWT | `amount`, `sendId`, `receiveId` | Crea un pago entre dos usuarios |
-| `GET` | `/payments` | JWT | — | Lista todos los pagos |
-| `GET` | `/payments/{id}` | JWT | — | Pagos asociados a un usuario |
-| `GET` | `/payments/users` | JWT | — | Lista usuarios desde Payment Service |
-| `GET` | `/payments/users/{id}` | JWT | — | Consulta usuario desde Payment Service |
-| `PUT` | `/payments/users/{id}/update` | JWT | Campos a actualizar | Actualiza usuario desde Payment Service |
+| Método | Endpoint | Auth | Descripción |
+|--------|----------|------|-------------|
+| `POST` | `/payments` | JWT | Crea un pago entre dos usuarios |
+| `GET` | `/payments` | JWT | Lista todos los pagos |
+| `GET` | `/payments/{id}` | JWT | Pagos del usuario autenticado |
+| `GET` | `/payments/users` | JWT | Lista usuarios desde Payment Service |
+| `GET` | `/payments/users/{id}` | JWT | Consulta usuario (solo el propio) |
+| `PUT` | `/payments/users/{id}/update` | JWT | Actualiza usuario (solo el propio) |
+| `POST` | `/payments/users/{id}/deposit` | JWT | Deposita saldo (solo el propio) |
+| `POST` | `/payments/users/{id}/withdraw` | JWT | Retira saldo (solo el propio) |
+
+> Los endpoints marcados con "solo el propio" verifican que el `userId` del token coincide con el `{id}` de la URL. Un usuario no puede operar sobre la cuenta de otro.
+
+---
+
+## Tests
+
+El proyecto incluye tests unitarios y de controller con JUnit 5 + Mockito + MockMvc.
+
+**User Service:**
+- `UserControllerTest` — 7 tests de controller con MockMvc y `@WebMvcTest`
+- `UserServiceAppTest` — tests unitarios del servicio con mocks
+
+**Payment Service:**
+- `PaymentsControllerTest` — 7 tests de controller con MockMvc y `@WebMvcTest`
+- `PaymentsServicesApplicationTests` — 9 tests unitarios del servicio
+
+Técnicas demostradas: `@Mock`, `@InjectMocks`, `@MockitoBean`, `verify()`, `assertThrows()`, `never()`, `verifyNoMoreInteractions()`, `jsonPath()`, `@DisplayName`.
 
 ---
 
@@ -187,29 +205,22 @@ curl -X POST http://localhost:8080/users/login \
   -d '{"username": "demo1", "password": "demo1234"}'
 ```
 
-Copia el token JWT devuelto.
-
-### 3. Añadir saldo al usuario 1
+### 3. Depositar saldo
 
 ```bash
-curl -X POST "http://localhost:8080/users/1/credit?amount=100" \
-  -H "Authorization: Bearer TU_TOKEN"
+curl -X POST http://localhost:8080/payments/users/1/deposit \
+  -H "Authorization: Bearer TU_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 100}'
 ```
 
 ### 4. Crear un pago
 
 ```bash
 curl -X POST http://localhost:8080/payments \
-  -H "Content-Type: application/json" \
   -H "Authorization: Bearer TU_TOKEN" \
+  -H "Content-Type: application/json" \
   -d '{"amount": 25.50, "sendId": 1, "receiveId": 2}'
-```
-
-### 5. Ver pagos del usuario 1
-
-```bash
-curl -X GET http://localhost:8080/payments/1 \
-  -H "Authorization: Bearer TU_TOKEN"
 ```
 
 ---
@@ -220,6 +231,10 @@ curl -X GET http://localhost:8080/payments/1 \
 PagosMicroservicios/
 ├── Gateway_Service/
 │   ├── src/
+│   │   └── Authentication/
+│   │       ├── AuthenticationFilter.java
+│   │       ├── JwtUtil.java
+│   │       └── MutableHttpServletRequest.java
 │   ├── Dockerfile
 │   └── pom.xml
 ├── User_Services/
@@ -233,8 +248,7 @@ PagosMicroservicios/
 ├── docker-compose.yml
 ├── .env.example
 ├── .gitignore
-├── README.md
-└── pom.xml
+└── README.md
 ```
 
 ---
@@ -242,14 +256,15 @@ PagosMicroservicios/
 ## Buenas prácticas aplicadas
 
 - API Gateway como único punto de entrada
-- Autenticación centralizada con JWT
+- JWT con claims personalizados (`userId`) para propagar identidad
+- `MutableHttpServletRequest` para inyectar headers en el pipeline de servlets
+- Autorización a nivel de recurso — un usuario solo puede operar sobre sus propios datos
 - Microservicios sin puertos expuestos (solo accesibles por red interna Docker)
-- Comunicación entre servicios con OpenFeign
+- Comunicación entre servicios con OpenFeign + `FeignErrorDecoder` personalizado
 - Manejo global de excepciones con `@RestControllerAdvice`
 - DTOs para no exponer entidades ni contraseñas
-- Soft delete de usuarios con `@SoftDelete`
+- Soft delete con `@SoftDelete` de Hibernate
 - Variables de entorno para toda la configuración sensible
-- Dockerización independiente por servicio
 
 ---
 
@@ -259,8 +274,8 @@ PagosMicroservicios/
 
 Escríbeme y te envío las credenciales de demo en menos de 24h:
 
-- 💼 [LinkedIn – Gonzalo Pérez Giménez](https://www.linkedin.com/in/gonzalo-perez-739b33b2/)
-- 📧 [GitHub – GonzaloPerezGimenez](https://github.com/GonzaloPerezGimenez)
+- 💼 [LinkedIn – Gonzalo Pérez Giménez](https://www.linkedin.com/in/gonzalo-perez-gimenez)
+- 🐙 [GitHub – GonzaloPerezGimenez](https://github.com/GonzaloPerezGimenez)
 
 ---
 
@@ -268,7 +283,6 @@ Escríbeme y te envío las credenciales de demo en menos de 24h:
 
 - [ ] Colección de Postman
 - [ ] Swagger / OpenAPI por servicio
-- [ ] Tests unitarios e integración
 - [ ] CI con GitHub Actions
 
 ---
