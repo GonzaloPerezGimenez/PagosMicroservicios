@@ -52,7 +52,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
         try {
             Claims claims = jwtUtil.validateToken(token);
             MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
-            mutableRequest.addHeader("X-User-Id", claims.get("user Id").toString());
+            mutableRequest.addHeader("X-User-Id", claims.get("userId").toString());
             filterChain.doFilter(mutableRequest, response);
 
         } catch (ExpiredJwtException e) {

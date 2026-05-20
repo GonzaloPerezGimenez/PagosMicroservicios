@@ -62,13 +62,13 @@ public class PaymentsService {
 
     public ResponseEntity<String> depositUserBalance(Long id, BigDecimal amount) {
         userClient.creditUserBalance(id, amount);
-        return ResponseEntity.ok("Se han depositado los fondos con éxito. Actualmente tienes un saldo de: " + userClient.getUserById(id).getBalance()); // Retorna un mensaje de éxito al controlador
+        return ResponseEntity.ok("Se han depositado los fondos con éxito."); // Retorna un mensaje de éxito al controlador
     }
 
     public ResponseEntity<String> withdrawUserBalance(Long id, BigDecimal amount) {
         validateSenderBalance(userClient.getUserById(id), amount);
         userClient.debitUserBalance(id, amount);
-        return ResponseEntity.ok("Se han retirado los fondos con éxito. Actualmente tienes un saldo de: " + userClient.getUserById(id).getBalance()); // Retorna un mensaje de éxito al controlador
+        return ResponseEntity.ok("Se han retirado los fondos con éxito."); // Retorna un mensaje de éxito al controlador
     }
 
     // Métodos privados para validaciones y lógica de negocio
