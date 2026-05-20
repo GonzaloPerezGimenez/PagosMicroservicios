@@ -41,7 +41,8 @@ class PaymentsServicesApplicationTests {
     void getUserById_UserNotFound_ThrowsException() {
         // Arranque
         Long nonExistentUserId = 999L;
-        when(userClient.getUserById(nonExistentUserId)).thenThrow(new RuntimeException("No se encontró un usuario con ID: " + nonExistentUserId));
+        when(userClient.getUserById(nonExistentUserId))
+                .thenThrow(new RuntimeException("No se encontró un usuario con ID: " + nonExistentUserId));
         // When
         RuntimeException exception = assertThrows(RuntimeException.class, () -> paymentsService.getUserById(nonExistentUserId));
 
@@ -55,11 +56,11 @@ class PaymentsServicesApplicationTests {
         // Arranque
         UserDTO userDTOSender = new UserDTO("Test Sender", "testsender");
         userDTOSender.setId(1L);
-        userDTOSender.setBalance(new BigDecimal("200.00"));
+        userDTOSender.setBalance(BigDecimal.valueOf(200.00));
 
         UserDTO userDTODestination = new UserDTO("Test Destination", "testdestination");
         userDTODestination.setId(2L);
-        Payments payment = new Payments(new BigDecimal("100.00"), userDTOSender.getId(), userDTODestination.getId());
+        Payments payment = new Payments(BigDecimal.valueOf(100.00), userDTOSender.getId(), userDTODestination.getId());
 
         when(userClient.getUserById(userDTOSender.getId()))
                 .thenReturn(userDTOSender);
@@ -83,11 +84,11 @@ class PaymentsServicesApplicationTests {
         // Arranque
         UserDTO userDTOSender = new UserDTO("Test Sender", "testsender");
         userDTOSender.setId(1L);
-        userDTOSender.setBalance(new BigDecimal("200.00"));
+        userDTOSender.setBalance(BigDecimal.valueOf(200.00));
 
         UserDTO userDTODestination = new UserDTO("Test Destination", "testdestination");
         userDTODestination.setId(2L);
-        Payments payment = new Payments(new BigDecimal("100.00"), userDTOSender.getId(), userDTODestination.getId());
+        Payments payment = new Payments(BigDecimal.valueOf(100.00), userDTOSender.getId(), userDTODestination.getId());
 
         when(userClient.getUserById(userDTOSender.getId()))
                 .thenReturn(userDTOSender);
@@ -110,8 +111,8 @@ class PaymentsServicesApplicationTests {
         //Arranque
         UserDTO userDTOSender = new UserDTO("Test Sender", "testsender");
         userDTOSender.setId(1L);
-        userDTOSender.setBalance(new BigDecimal("200.00"));
-        Payments payment = new Payments(new BigDecimal("100.00"), userDTOSender.getId(), userDTOSender.getId());
+        userDTOSender.setBalance(BigDecimal.valueOf(200.00));
+        Payments payment = new Payments(BigDecimal.valueOf(100.00), userDTOSender.getId(), userDTOSender.getId());
 
         when(userClient.getUserById(userDTOSender.getId()))
                 .thenReturn(userDTOSender);
@@ -130,10 +131,10 @@ class PaymentsServicesApplicationTests {
         //Arranque
         UserDTO userDTOSender = new UserDTO("Test Sender", "testsender");
         userDTOSender.setId(1L);
-        userDTOSender.setBalance(new BigDecimal("99.99"));
+        userDTOSender.setBalance(BigDecimal.valueOf(99.99));
         UserDTO userDTODestination = new UserDTO("Test Destination", "testdestination");
         userDTODestination.setId(2L);
-        Payments payment = new Payments(new BigDecimal("100.00"), userDTOSender.getId(), userDTODestination.getId());
+        Payments payment = new Payments(BigDecimal.valueOf(100.00), userDTOSender.getId(), userDTODestination.getId());
 
         when(userClient.getUserById(userDTOSender.getId()))
                 .thenReturn(userDTOSender);
@@ -154,9 +155,9 @@ class PaymentsServicesApplicationTests {
         // Arranque
         UserDTO userDTOSender = new UserDTO("Test Sender", "testsender");
         userDTOSender.setId(1L);
-        userDTOSender.setBalance(new BigDecimal("150.00"));
+        userDTOSender.setBalance(BigDecimal.valueOf(150.00));
 
-        Payments payment = new Payments(new BigDecimal("100.00"), userDTOSender.getId(), 2L);
+        Payments payment = new Payments(BigDecimal.valueOf(100.00), userDTOSender.getId(), 2L);
 
         when(userClient.getUserById(userDTOSender.getId()))
                 .thenReturn(userDTOSender);
@@ -173,7 +174,7 @@ class PaymentsServicesApplicationTests {
     @DisplayName("Test para verificar que se obtiene los pagos de un usuario correctamente")
     void getPaymentsByUserIdTest() {
         //Arranque
-        Payments payment1 = new Payments(new BigDecimal("100.00"), 1L, 2L);
+        Payments payment1 = new Payments(BigDecimal.valueOf(100.00), 1L, 2L);
         payment1.setId(1L);
         List<Payments> payments = List.of(payment1);
         UserDTO userDTOSender = new UserDTO("Test Sender", "testsender");
@@ -213,7 +214,7 @@ class PaymentsServicesApplicationTests {
     @DisplayName("Test para verificar que devuelve todos los pagos")
     void validateReturnedAllPayments() {
         //Arranque
-        Payments payment1 = new Payments(new BigDecimal("100.00"), 1L, 2L);
+        Payments payment1 = new Payments(BigDecimal.valueOf(100.00), 1L, 2L);
         payment1.setId(1L);
         List<Payments> payments = List.of(payment1);
         when(paymentsRepository.findAll())
@@ -228,7 +229,7 @@ class PaymentsServicesApplicationTests {
         assertEquals(1L, listOfPayments.get(0).getId());
         assertEquals(1L, listOfPayments.get(0).getSendId());
         assertEquals(2L, listOfPayments.get(0).getReceiveId());
-        assertEquals(0, new BigDecimal("100.00").compareTo(listOfPayments.get(0).getAmount()));
+        assertEquals(0, BigDecimal.valueOf(100.00).compareTo(listOfPayments.get(0).getAmount()));
     }
 
     @Test

@@ -77,7 +77,7 @@ public class PaymentsControllerTest {
 
     @Test
     @DisplayName("Test para validar una excepcion de un pago sin remitente o destinatario")
-    void validateExceptionPaymentWithoutSender() throws Exception {
+    void validateExceptionPaymentWithoutSenderOrReceiver() throws Exception {
         //Arranque
         String paymentJson = """
         {   "amount":100,
@@ -110,7 +110,7 @@ public class PaymentsControllerTest {
         //Arranque
         UserDTO userDTOSender = new UserDTO("Test Sender", "testsender");
         userDTOSender.setId(1L);
-        Payments payment1 = new Payments(new BigDecimal("100.00"), 1L, 2L);
+        Payments payment1 = new Payments(BigDecimal.valueOf(100.00), 1L, 2L);
         payment1.setId(1L);
         List<Payments> payments = List.of(payment1);
 
@@ -137,7 +137,7 @@ public class PaymentsControllerTest {
         {   "amount":100  }
         """;
 
-        when(paymentsService.depositUserBalance(userDTOSender.getId(), new BigDecimal("100.00")))
+        when(paymentsService.depositUserBalance(userDTOSender.getId(), BigDecimal.valueOf(100)))
                 .thenReturn(ResponseEntity.ok("Se han depositado los fondos con éxito."));
 
         mockMvc.perform(post("/payments/users/1/deposit")
@@ -147,8 +147,56 @@ public class PaymentsControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("Se han depositado los fondos con éxito."));
 
-        verify(paymentsService).depositUserBalance(1L, new BigDecimal(100.00));
+        verify(paymentsService).depositUserBalance(1L, BigDecimal.valueOf(100));
 
+    }
+
+    @Test
+    @DisplayName("Test para realizar un retiro con ID autorizado ")
+    void withdrawUserBalance() throws Exception {
+        //Arranque
+        UserDTO userDTOSender = new UserDTO("Test Sender", "testsender");
+        userDTOSender.setId(1L);
+        userDTOSender.setBalance(BigDecimal.valueOf(200));
+        String withdrawJson = """
+        {   "amount":100  }
+        """;
+
+        when(paymentsService.withdrawUserBalance(userDTOSender.getId(), BigDecimal.valueOf(100)))
+                .thenReturn(ResponseEntity.ok("Se han retirado los fondos con éxito."));
+
+        mockMvc.perform(post("/payments/users/1/withdraw")
+                .header("X-User-Id", "1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(withdrawJson))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Se han retirado los fondos con éxito."));
+
+        verify(paymentsService).withdrawUserBalance(1L, BigDecimal.valueOf(100));
+
+    }
+
+    @Test
+    @DisplayName("Test para validar una excepcion de un retiro con saldo insuficiente")
+    void withdrawUserBalanceInsufficientFunds() throws Exception {
+        //Arranque
+        UserDTO userDTOSender = new UserDTO("Test Sender", "testsender");
+        userDTOSender.setId(1L);
+        String withdrawJson = """
+        {   "amount":100  }
+        """;
+
+        when(paymentsService.withdrawUserBalance(userDTOSender.getId(), BigDecimal.valueOf(100)))
+                .thenThrow(new IllegalArgumentException("No tienes saldo suficiente"));
+
+        mockMvc.perform(post("/payments/users/1/withdraw")
+                .header("X-User-Id", "1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(withdrawJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("No tienes saldo suficiente"));
+
+        verify(paymentsService, times(1)).withdrawUserBalance(1L, BigDecimal.valueOf(100));
     }
 
 }
