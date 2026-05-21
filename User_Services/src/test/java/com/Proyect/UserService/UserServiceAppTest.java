@@ -18,6 +18,7 @@ import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.Proyect.UserService.config.JwtServices;
 import com.Proyect.UserService.exceptions.UsernameAlreadyExist;
@@ -46,8 +47,12 @@ class UserServiceAppTest {
     void saveUser_ShouldEncryptPassword() {
         // Arrange
         User user = createUser(1L, "test_Name", "testUsername", "Test_Pass");
-        when(passwordEncoder.encode(user.getPassword())).thenReturn("encryptedPassword");
-        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(passwordEncoder.encode(user.getPassword()))
+                .thenReturn("encryptedPassword");
+        when(userRepository.findByUsername(user.getUsername()))
+                .thenReturn(Optional.empty());
+        when(userRepository.save(any(User.class)))
+                .thenReturn(user);
 
         // When
         userService.saveUser(user);
@@ -55,6 +60,8 @@ class UserServiceAppTest {
         // Then
         assertEquals("encryptedPassword", user.getPassword());
         verify(userRepository).save(user);
+        verify(passwordEncoder).encode("Test_Pass");
+        verify(userRepository).findByUsername("testUsername");
 
     }
 
@@ -63,7 +70,8 @@ class UserServiceAppTest {
     void saveUser() {
         // Arrange
         User user = createUser(1L, "test_Name", "testUsername", "Test_Pass");
-
+        when(userRepository.findByUsername(user.getUsername()))
+                .thenReturn(Optional.empty());
         when(userRepository.save(user))
                 .thenReturn(user);
 
@@ -72,6 +80,7 @@ class UserServiceAppTest {
 
         // Then
         assertEquals(ResponseEntity.ok("Usuario registrado con éxito."), result);
+        verify(userRepository).findByUsername("testUsername");
         verify(userRepository).save(user);
 
     }
@@ -91,6 +100,8 @@ class UserServiceAppTest {
         // Then
         assertEquals("El nombre de usuario ya existe", exception.getMessage());
         verify(userRepository, never()).save(user);
+        verify(userRepository).findByUsername("testUsername");
+        verify(passwordEncoder, never()).encode(any(String.class));
 
     }
 
@@ -121,14 +132,13 @@ class UserServiceAppTest {
         String usernameNotExist = "nonExistentUser";
 
         when(userRepository.findByUsername(usernameNotExist))
-                .thenThrow(new IllegalArgumentException("Usuario no encontrado"));
+                .thenReturn(Optional.empty());
 
         //When
-        IllegalArgumentException exceptionUsername = assertThrows(IllegalArgumentException.class, ()
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, ()
                 -> userService.loginUser(usernameNotExist, "anyPassword"));
-
         //Assert
-        assertEquals("Usuario no encontrado", exceptionUsername.getMessage());
+        assertEquals("Usuario " + usernameNotExist + " no encontrado", exception.getReason());
         verify(userRepository).findByUsername(usernameNotExist);
         verify(passwordEncoder, never()).matches(any(String.class), any(String.class));
         verify(jwtServices, never()).generateToken(any(String.class), any(Long.class));
@@ -178,14 +188,14 @@ class UserServiceAppTest {
     void validateToFindUserById_WhenUserDontExist() {
         //Arranque
         when(userRepository.findById(1L))
-                .thenThrow(new IllegalArgumentException("Usuario no encontrado"));
+                .thenReturn(Optional.empty());
 
         //When
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, ()
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, ()
                 -> userService.getUserById(1L));
 
         //Then
-        assertEquals("Usuario no encontrado", exception.getMessage());
+        assertEquals("Usuario con ID " + 1 + " no encontrado", exception.getReason());
         verify(userRepository).findById(1L);
     }
 
@@ -283,13 +293,13 @@ class UserServiceAppTest {
     void validateToDeleteUser_WhenUserDoesNotExist() {
         //arranque
         when(userRepository.findById(1L))
-                .thenThrow(new IllegalArgumentException("Usuario no encontrado."));
+                .thenReturn(Optional.empty());
         //When
-        IllegalArgumentException excepcion = assertThrows(IllegalArgumentException.class, ()
+        ResponseStatusException excepcion = assertThrows(ResponseStatusException.class, ()
                 -> userService.deleteUser(1L));
 
         //Then
-        assertEquals("Usuario no encontrado.", excepcion.getMessage());
+        assertEquals("Usuario con ID 1 no encontrado", excepcion.getReason());
         verify(userRepository).findById(1L);
         verify(userRepository, never()).delete(any(User.class));
     }

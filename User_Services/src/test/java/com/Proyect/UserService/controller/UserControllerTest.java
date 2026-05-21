@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -44,11 +45,14 @@ public class UserControllerTest {
             "password": "testpassword"
         }
         """;
+        when(userService.saveUser(any()))
+                .thenReturn(ResponseEntity.ok("Usuario registrado con éxito."));
 
         mockMvc.perform(post("/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(userJson))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(content().string("Usuario registrado con éxito."));
 
         verify(userService).saveUser(any());
     }
@@ -72,13 +76,14 @@ public class UserControllerTest {
         mockMvc.perform(post("/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(userJson))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.username").exists());
 
         mockMvc.perform(post("/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(userJsonNotUsername))
-                .andExpect(status().isBadRequest());
-
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.username").exists());
         verify(userService, never()).saveUser(any());
     }
 
@@ -103,12 +108,14 @@ public class UserControllerTest {
         mockMvc.perform(post("/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(userJsonNoPassword))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.password").exists());
 
         mockMvc.perform(post("/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(userJsonShortPass))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.password").exists());
 
         verify(userService, never()).saveUser(any());
     }
@@ -170,6 +177,28 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.balance").value(0));
 
         verify(userService).getUserById(1L);
+    }
+
+    @Test
+    @DisplayName("Test para verificar que se actualiza el usuario por ID.")
+    void testUpdateUserById() throws Exception {
+        // Arrange
+        String updatesJson = """
+        {
+            "nombre": "Updated User",
+            "username": "updateduser"
+        }
+        """;
+        when(userService.updateUser(any(), any()))
+                .thenReturn(ResponseEntity.ok("Usuario actualizado con éxito."));
+
+        mockMvc.perform(put("/users/1/update")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(updatesJson))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Usuario actualizado con éxito."));
+
+        verify(userService).updateUser(any(), any());
     }
 
     @Test

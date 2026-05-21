@@ -101,7 +101,7 @@ public class UserService {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResponseStatusException(
                 HttpStatus.NOT_FOUND,
-                "Usuario con nombre de usuario " + username + " no encontrado"
+                "Usuario " + username + " no encontrado"
         ));
     }
 
