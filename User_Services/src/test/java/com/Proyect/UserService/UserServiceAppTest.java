@@ -128,7 +128,7 @@ class UserServiceAppTest {
     @Test
     @DisplayName("Test para devolver error al iniciar sesión si el usuario no existente")
     void loginuser_Fails_WhenUserDoesNotExist() {
-        // Arranque
+        // Arrange
         String usernameNotExist = "nonExistentUser";
 
         when(userRepository.findByUsername(usernameNotExist))
@@ -167,7 +167,7 @@ class UserServiceAppTest {
     @Test
     @DisplayName("Test que devuelve un usuario al buscar por ID")
     void getExistingUserById() {
-        //Arranque
+        //Arrange
         User user = createUser(1L, "test_Name", "testUsername", "Test_Pass");
 
         when(userRepository.findById(user.getId()))
@@ -186,7 +186,7 @@ class UserServiceAppTest {
     @Test
     @DisplayName("Test que devuelve error al buscar un usuario por username que no existe")
     void validateToFindUserById_WhenUserDontExist() {
-        //Arranque
+        //Arrange
         when(userRepository.findById(1L))
                 .thenReturn(Optional.empty());
 
@@ -202,7 +202,7 @@ class UserServiceAppTest {
     @Test
     @DisplayName("Test que suma el monto al balance del usuario")
     void creditUserBalance() {
-        //arranque
+        //Arrange
         User user = createUser(1L, "test_Name", "testUsername", "Test_Pass");
         user.setBalance(BigDecimal.valueOf(100));
         when(userRepository.findById(user.getId()))
@@ -220,7 +220,7 @@ class UserServiceAppTest {
     @Test
     @DisplayName("Test que resta el monto al balance del usuario")
     void debitUserBalance() {
-        //arranque
+        //Arrange
         User user = createUser(1L, "test_Name", "testUsername", "Test_Pass");
         user.setBalance(BigDecimal.valueOf(100));
         when(userRepository.findById(user.getId()))
@@ -238,7 +238,7 @@ class UserServiceAppTest {
     @Test
     @DisplayName("Test que da error cuando resta el monto al balance del usuario y no hay saldo suficiente")
     void validateToDebitUserBalance_WhenInsufficientBalance() {
-        //arranque
+        //Arrange
         User user = createUser(1L, "test_Name", "testUsername", "Test_Pass");
         user.setBalance(BigDecimal.valueOf(10));
         when(userRepository.findById(user.getId()))
@@ -257,7 +257,7 @@ class UserServiceAppTest {
     @Test
     @DisplayName("Test que actualiza la contraseña del usuario")
     void updateUserPassword() {
-        //arranque
+        //Arrange
         User user = createUser(1L, "test_Name", "testUsername", "Test_Pass");
         when(userRepository.findById(user.getId()))
                 .thenReturn(Optional.of(user));
@@ -276,7 +276,7 @@ class UserServiceAppTest {
     @Test
     @DisplayName("Test que elimina un usuario")
     void deleteUser() {
-        //arranque
+        //Arrange
         User user = createUser(1L, "test_Name", "testUsername", "Test_Pass");
         when(userRepository.findById(user.getId()))
                 .thenReturn(Optional.of(user));
@@ -291,7 +291,7 @@ class UserServiceAppTest {
     @Test
     @DisplayName("Test que da error al eliminar un usuario que no existe")
     void validateToDeleteUser_WhenUserDoesNotExist() {
-        //arranque
+        //Arrange
         when(userRepository.findById(1L))
                 .thenReturn(Optional.empty());
         //When

@@ -5,6 +5,8 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,12 +41,13 @@ class PaymentsServicesApplicationTests {
     @Test
     @DisplayName("Test para verificar que lanza excepción al intentar obtener un usuario con ID no existente")
     void getUserById_UserNotFound_ThrowsException() {
-        // Arranque
+        // Arrange
         Long nonExistentUserId = 999L;
         when(userClient.getUserById(nonExistentUserId))
-                .thenThrow(new RuntimeException("No se encontró un usuario con ID: " + nonExistentUserId));
+                .thenReturn(null);
         // When
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> paymentsService.getUserById(nonExistentUserId));
+        InvalidUserIdException exception = assertThrows(InvalidUserIdException.class, ()
+                -> paymentsService.getUserById(nonExistentUserId));
 
         // Then
         assertEquals("No se encontró un usuario con ID: " + nonExistentUserId, exception.getMessage());
@@ -53,7 +56,7 @@ class PaymentsServicesApplicationTests {
     @Test
     @DisplayName("Test para verificar que el servicio de pagos crea un pago correctamente")
     void createPaymentTest() {
-        // Arranque
+        // Arrange
         UserDTO userDTOSender = new UserDTO("Test Sender", "testsender");
         userDTOSender.setId(1L);
         userDTOSender.setBalance(BigDecimal.valueOf(200.00));
@@ -79,9 +82,10 @@ class PaymentsServicesApplicationTests {
     }
 
     @Test
+    @BeforeEach
     @DisplayName("Test para verificar que el servicio de pagos resta el saldo del remitente y suma el saldo al destinatario correctamente")
     void createPaymentTestWithBalanceUpdate() {
-        // Arranque
+        // Arrange        
         UserDTO userDTOSender = new UserDTO("Test Sender", "testsender");
         userDTOSender.setId(1L);
         userDTOSender.setBalance(BigDecimal.valueOf(200.00));
@@ -108,7 +112,7 @@ class PaymentsServicesApplicationTests {
     @Test
     @DisplayName("Test para lanzar excepcion al intentar realizar un pago al mismo usuario")
     void validateExceptionWhenPayingToSameUser() {
-        //Arranque
+        //Arrange
         UserDTO userDTOSender = new UserDTO("Test Sender", "testsender");
         userDTOSender.setId(1L);
         userDTOSender.setBalance(BigDecimal.valueOf(200.00));
@@ -128,7 +132,7 @@ class PaymentsServicesApplicationTests {
     @Test
     @DisplayName("Test para lanzar excepcion al intentar realizar un pago con saldo insuficiente")
     void validateExceptionWhenPayingWithoutSufficientBalance() {
-        //Arranque
+        //Arrange
         UserDTO userDTOSender = new UserDTO("Test Sender", "testsender");
         userDTOSender.setId(1L);
         userDTOSender.setBalance(BigDecimal.valueOf(99.99));
@@ -152,7 +156,7 @@ class PaymentsServicesApplicationTests {
     @Test
     @DisplayName("Test para lanzar excepcion al enviar un pago a un destinatario inexistente")
     void validateExceptionWhenPayingToNonExistentUser() {
-        // Arranque
+        // Arrange
         UserDTO userDTOSender = new UserDTO("Test Sender", "testsender");
         userDTOSender.setId(1L);
         userDTOSender.setBalance(BigDecimal.valueOf(150.00));
@@ -173,7 +177,7 @@ class PaymentsServicesApplicationTests {
     @Test
     @DisplayName("Test para verificar que se obtiene los pagos de un usuario correctamente")
     void getPaymentsByUserIdTest() {
-        //Arranque
+        //Arrange
         Payments payment1 = new Payments(BigDecimal.valueOf(100.00), 1L, 2L);
         payment1.setId(1L);
         List<Payments> payments = List.of(payment1);
@@ -196,7 +200,7 @@ class PaymentsServicesApplicationTests {
     @Test
     @DisplayName("Test para verificar que hay excepcion al no existir el usuario")
     void getExcepcionIfUserIdDontExist() {
-        //Arranque
+        //Arrange
         Long userID = 1L;
         when(userClient.getUserById(userID))
                 .thenThrow(new InvalidUserIdException("El usuario con ID 1 no existe"));
@@ -213,7 +217,7 @@ class PaymentsServicesApplicationTests {
     @Test
     @DisplayName("Test para verificar que devuelve todos los pagos")
     void validateReturnedAllPayments() {
-        //Arranque
+        //Arrange
         Payments payment1 = new Payments(BigDecimal.valueOf(100.00), 1L, 2L);
         payment1.setId(1L);
         List<Payments> payments = List.of(payment1);
@@ -235,7 +239,7 @@ class PaymentsServicesApplicationTests {
     @Test
     @DisplayName("Test para verificar que devuelve todos los usuarios")
     void validateReturnedAllUsers() {
-        //Arranque
+        //Arrange
         UserDTO user1 = new UserDTO("Test User 1", "testuser1");
         user1.setId(1L);
         List<UserDTO> users = List.of(user1);
@@ -250,5 +254,17 @@ class PaymentsServicesApplicationTests {
         assertEquals(1, listOfUsers.size());
         assertEquals(1L, listOfUsers.get(0).getId());
         assertEquals("testuser1", listOfUsers.get(0).getUsername());
+    }
+
+    private UserDTO createTestUserDTO(Long id, String name, String username, BigDecimal balance) {
+        UserDTO userDTO = new UserDTO(name, username);
+        userDTO.setId(id);
+        userDTO.setBalance(balance);
+        return userDTO;
+    }
+
+    @BeforeEach
+    void setUp() {
+        UserDTO user1 = createTestUserDTO(1L, "Test User 1", "testuser1", BigDecimal.valueOf(100.00));
     }
 }

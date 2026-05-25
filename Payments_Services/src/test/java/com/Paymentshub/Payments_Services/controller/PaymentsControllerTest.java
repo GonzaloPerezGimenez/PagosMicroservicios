@@ -37,7 +37,7 @@ public class PaymentsControllerTest {
     @Test
     @DisplayName("Test para crear un pago correcto")
     void createPayment() throws Exception {
-        //Arranque
+        //Arrange
         String paymentJson = """
         {   "amount":100,
             "sendId":1,
@@ -59,7 +59,7 @@ public class PaymentsControllerTest {
     @Test
     @DisplayName("Test para validar una excepcion de un pago con pago negativo")
     void validateExceptionPaymentNegative() throws Exception {
-        //Arranque
+        //Arrange
         String paymentJson = """
         {   "amount":-100,
             "sendId":1,
@@ -78,7 +78,7 @@ public class PaymentsControllerTest {
     @Test
     @DisplayName("Test para validar una excepcion de un pago sin remitente o destinatario")
     void validateExceptionPaymentWithoutSenderOrReceiver() throws Exception {
-        //Arranque
+        //Arrange
         String paymentJson = """
         {   "amount":100,
             "sendId":null,
@@ -107,7 +107,7 @@ public class PaymentsControllerTest {
     @Test
     @DisplayName("Test para consultar los pagos de un usuario con ID autorizado")
     void getPaymentsByUserId() throws Exception {
-        //Arranque
+        //Arrange
         UserDTO userDTOSender = new UserDTO("Test Sender", "testsender");
         userDTOSender.setId(1L);
         Payments payment1 = new Payments(BigDecimal.valueOf(100.00), 1L, 2L);
@@ -130,7 +130,7 @@ public class PaymentsControllerTest {
     @Test
     @DisplayName("Test para realizar un deposito con ID autorizado")
     void depositUserBalance() throws Exception {
-        //Arranque
+        //Arrange
         UserDTO userDTOSender = new UserDTO("Test Sender", "testsender");
         userDTOSender.setId(1L);
         String depositJson = """
@@ -154,7 +154,7 @@ public class PaymentsControllerTest {
     @Test
     @DisplayName("Test para realizar un retiro con ID autorizado ")
     void withdrawUserBalance() throws Exception {
-        //Arranque
+        //Arrange
         UserDTO userDTOSender = new UserDTO("Test Sender", "testsender");
         userDTOSender.setId(1L);
         userDTOSender.setBalance(BigDecimal.valueOf(200));
@@ -179,7 +179,7 @@ public class PaymentsControllerTest {
     @Test
     @DisplayName("Test para validar una excepcion de un retiro con saldo insuficiente")
     void withdrawUserBalanceInsufficientFunds() throws Exception {
-        //Arranque
+        //Arrange
         UserDTO userDTOSender = new UserDTO("Test Sender", "testsender");
         userDTOSender.setId(1L);
         String withdrawJson = """
