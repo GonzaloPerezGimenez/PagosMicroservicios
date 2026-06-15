@@ -41,10 +41,10 @@ jobs:
     - name: Construir y Subir Imagen - Payment Service
       uses: docker/build-push-action@v5
       with:
-        context: ./Payment_Services  # Tu carpeta de pagos
-        file: ./Payment_Services/Dockerfile
+        context: ./Payments_Services  # Tu carpeta de pagos
+        file: ./Payments_Services/Dockerfile
         push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/payment-service:latest
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/payments-service:latest
 
     # MICROSERVICIO DE USUARIOS
     - name: Construir y Subir Imagen - User Service
