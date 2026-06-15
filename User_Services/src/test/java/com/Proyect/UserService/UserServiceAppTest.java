@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,12 +42,18 @@ class UserServiceAppTest {
 
     @InjectMocks
     private UserService userService;
+    User user;
+
+    @BeforeEach
+    @SuppressWarnings("unused")
+    void setUp() {
+        user = createUser(1L, "Test User", "testUsername", "Test_Pass");
+    }
 
     @Test
     @DisplayName("Test encriptacion de contraseña al registrar usuario")
     void saveUser_ShouldEncryptPassword() {
         // Arrange
-        User user = createUser(1L, "test_Name", "testUsername", "Test_Pass");
         when(passwordEncoder.encode(user.getPassword()))
                 .thenReturn("encryptedPassword");
         when(userRepository.findByUsername(user.getUsername()))
@@ -69,7 +76,6 @@ class UserServiceAppTest {
     @DisplayName("Test para registrar un usuario")
     void saveUser() {
         // Arrange
-        User user = createUser(1L, "test_Name", "testUsername", "Test_Pass");
         when(userRepository.findByUsername(user.getUsername()))
                 .thenReturn(Optional.empty());
         when(userRepository.save(user))
@@ -89,7 +95,6 @@ class UserServiceAppTest {
     @DisplayName("Test para validar que falla al registrar un usuario con username ya existente")
     void validateUserRegistration_Fails_WhenUsernameAlreadyExists() {
         // Arrange
-        User user = createUser(1L, "test_Name", "testUsername", "Test_Pass");
 
         when(userRepository.findByUsername("testUsername"))
                 .thenReturn(Optional.of(user));
@@ -109,7 +114,6 @@ class UserServiceAppTest {
     @DisplayName("Test para devolver el token al iniciar sesión")
     void getAuthToken() {
         // Arrange
-        User user = createUser(1L, "test_Name", "testUsername", "Test_Pass");
 
         when(userRepository.findByUsername(user.getUsername()))
                 .thenReturn(Optional.of(user));
@@ -148,7 +152,6 @@ class UserServiceAppTest {
     @DisplayName("Test para devolver error al iniciar sesión si la contraseña es incorrecta")
     void loginuser_Fails_WhenPasswordIsIncorrect() {
         // Arrange
-        User user = createUser(1L, "test_Name", "testUsername", "Test_Pass");
 
         when(userRepository.findByUsername(user.getUsername()))
                 .thenReturn(Optional.of(user));
@@ -168,7 +171,6 @@ class UserServiceAppTest {
     @DisplayName("Test que devuelve un usuario al buscar por ID")
     void getExistingUserById() {
         //Arrange
-        User user = createUser(1L, "test_Name", "testUsername", "Test_Pass");
 
         when(userRepository.findById(user.getId()))
                 .thenReturn(Optional.of(user));
@@ -203,7 +205,6 @@ class UserServiceAppTest {
     @DisplayName("Test que suma el monto al balance del usuario")
     void creditUserBalance() {
         //Arrange
-        User user = createUser(1L, "test_Name", "testUsername", "Test_Pass");
         user.setBalance(BigDecimal.valueOf(100));
         when(userRepository.findById(user.getId()))
                 .thenReturn(Optional.of(user));
@@ -221,7 +222,6 @@ class UserServiceAppTest {
     @DisplayName("Test que resta el monto al balance del usuario")
     void debitUserBalance() {
         //Arrange
-        User user = createUser(1L, "test_Name", "testUsername", "Test_Pass");
         user.setBalance(BigDecimal.valueOf(100));
         when(userRepository.findById(user.getId()))
                 .thenReturn(Optional.of(user));
@@ -239,7 +239,6 @@ class UserServiceAppTest {
     @DisplayName("Test que da error cuando resta el monto al balance del usuario y no hay saldo suficiente")
     void validateToDebitUserBalance_WhenInsufficientBalance() {
         //Arrange
-        User user = createUser(1L, "test_Name", "testUsername", "Test_Pass");
         user.setBalance(BigDecimal.valueOf(10));
         when(userRepository.findById(user.getId()))
                 .thenReturn(Optional.of(user));
@@ -258,7 +257,6 @@ class UserServiceAppTest {
     @DisplayName("Test que actualiza la contraseña del usuario")
     void updateUserPassword() {
         //Arrange
-        User user = createUser(1L, "test_Name", "testUsername", "Test_Pass");
         when(userRepository.findById(user.getId()))
                 .thenReturn(Optional.of(user));
         when(passwordEncoder.encode("New_Pass"))
@@ -277,7 +275,6 @@ class UserServiceAppTest {
     @DisplayName("Test que elimina un usuario")
     void deleteUser() {
         //Arrange
-        User user = createUser(1L, "test_Name", "testUsername", "Test_Pass");
         when(userRepository.findById(user.getId()))
                 .thenReturn(Optional.of(user));
         //When
@@ -306,8 +303,8 @@ class UserServiceAppTest {
 
     //Creacion de usuarios
     private User createUser(Long id, String nombre, String username, String password) {
-        User user = new User(nombre, username, password);
-        user.setId(id);
-        return user;
+        User newUser = new User(nombre, username, password);
+        newUser.setId(id);
+        return newUser;
     }
 }
