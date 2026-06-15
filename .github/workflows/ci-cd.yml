@@ -22,28 +22,44 @@ jobs:
       run: mvn clean test
 
   # === FASE 2: DESPLIEGUE CONTINUO (CD) ===
+ # === FASE 2: DESPLIEGUE CONTINUO (CD) ===
   deploy:
     runs-on: ubuntu-latest
-    # IMPORTANTE: Solo se ejecuta si la fase 'build-and-test' se pone en verde
     needs: build-and-test
     
     steps:
     - name: Descargar código fuente
       uses: actions/checkout@v4
 
-    # Loguearse en Docker Hub usando los secretos seguros que guardaste
     - name: Iniciar sesión en Docker Hub
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    # Construir y subir la imagen de Docker
-    - name: Construir y Subir Imagen Docker
+    # MICROSERVICIO DE PAGOS
+    - name: Construir y Subir Imagen - Payment Service
       uses: docker/build-push-action@v5
       with:
-        context: .  # Asume que tienes el Dockerfile en la raíz de tu proyecto
+        context: ./Payment_Services  # Tu carpeta de pagos
+        file: ./Payment_Services/Dockerfile
         push: true
-        # Reemplaza 'tu-usuario-docker' por tu nombre real de usuario de Docker Hub
-        # Reemplaza 'nombre-microservicio' por el nombre que quieras darle a la imagen
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/payment-service:latest
+
+    # MICROSERVICIO DE USUARIOS
+    - name: Construir y Subir Imagen - User Service
+      uses: docker/build-push-action@v5
+      with:
+        context: ./User_Services     # Tu carpeta de usuarios
+        file: ./User_Services/Dockerfile
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/user-service:latest
+    
+    # MICROSERVICIO DE GATEWAY
+    - name: Construir y Subir Imagen - Gateway Service
+      uses: docker/build-push-action@v5
+      with:
+        context: ./Gateway_Services     # Tu carpeta de gateway
+        file: ./Gateway_Services/Dockerfile
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/gateway-service:latest
