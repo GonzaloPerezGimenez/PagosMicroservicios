@@ -515,4 +515,4 @@ Mejoras recomendadas para evolucionar el proyecto:
 **Gonzalo Pérez Giménez**
 
 - GitHub: [GonzaloPerezGimenez](https://github.com/GonzaloPerezGimenez)
-- LinkedIn: [gonzalo-perez-gimenez](https://www.linkedin.com/in/gonzalo-perez-gimenez)
+- LinkedIn: [gonzalo-perez-gimenez](https://www.linkedin.com/in/gonzalo-perez-739b33b2)
